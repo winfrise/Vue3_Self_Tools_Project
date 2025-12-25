@@ -39,22 +39,6 @@ const adminList = [
     ]
   },
   {
-    path: '/external-link',
-    component: '#',
-    meta: {},
-    name: 'ExternalLink',
-    children: [
-      {
-        path: 'https://element-plus-admin-doc.cn/',
-        name: 'DocumentLink',
-        meta: {
-          title: '文档',
-          icon: 'vi-clarity:document-solid'
-        }
-      }
-    ]
-  },
-  {
     path: '/guide',
     component: '#',
     name: 'Guide',

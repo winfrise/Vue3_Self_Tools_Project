@@ -1,0 +1,649 @@
+<template>
+      <el-card class="video-preview-wrapper">
+        <div v-if="videoStore.videoFile" class="video-preview-section">
+          <div class="video-container">
+            <div class="video-crop-container" ref="cropContainerRef">
+              <video
+                ref="videoRef"
+                :src="videoStore.videoUrl"
+                class="video"
+                @loadedmetadata="handleLoadedMetadata"
+                @timeupdate="handleTimeUpdate"
+                @loadeddata="adjustCropBoxToVideo"
+                @ended="handleVideoEnded"
+                @click="togglePlayPause"
+                :controls="false"
+              ></video>
+
+              <div class="crop-box"
+                v-if="segmentStore.selectedSegment && segmentStore.selectedSegment.enableCrop"
+                :style="cropBoxStyles"
+                @mousedown="startCropBoxDrag"
+              >
+                <div class="crop-handle top-left" @mousedown="(e) => startCropBoxResize(e, 'tl')"></div>
+                <div class="crop-handle top-right" @mousedown="(e) => startCropBoxResize(e, 'tr')"></div>
+                <div class="crop-handle bottom-left" @mousedown="(e) => startCropBoxResize(e, 'bl')"></div>
+                <div class="crop-handle bottom-right" @mousedown="(e) => startCropBoxResize(e, 'br')"></div>
+                <div class="crop-info">
+                  {{ Math.round(segmentStore.selectedSegment.cropWidth) }}
+                  x{{ Math.round(segmentStore.selectedSegment.cropHeight) }}
+                   | X:{{ Math.round(segmentStore.selectedSegment.cropX) }}
+                   , Y:{{ Math.round(segmentStore.selectedSegment.cropY) }}
+                </div>
+              </div>
+              <!-- 播放按钮 -->
+              <div class="video-overlay" v-if="!isPlaying">
+                <el-icon @click="togglePlayPause" style="font-size: 100px; color: #fff"><VideoPlay /></el-icon>
+              </div>
+            </div>
+
+            <!-- 播放控制栏 -->
+            <div class="video-controls">
+              <el-button class="control-btn" :icon="isPlaying ? VideoPause : VideoPlay " @click="togglePlayPause"></el-button>
+
+              <!-- 进度条 -->
+              <div class="progress-container">
+                <input
+                  type="range"
+                  class="progress-bar"
+                  min="0"
+                  :max="videoStore.videoDuration"
+                  v-model="videoStore.currentTime"
+                  @input="seekVideo"
+                >
+              </div>
+
+                <div class="time-display">
+                  {{ videoStore.formatTime(videoStore.currentTime) }} / {{ videoStore.formatTime(videoStore.videoDuration) }}
+                </div>
+
+              <div class="volume-control">
+                <!-- 静音图标 -->
+                <el-button class="control-btn" :icon="isMuted ? Mute : Microphone " @click="toggleMute"></el-button>
+                <input
+                  type="range"
+                  class="volume-bar"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  :disabled="isMuted"
+                  v-model="volume"
+                  @input="setVolume"
+                >
+              </div>
+
+              <!-- 全屏播放按钮 -->
+              <el-button class="control-btn" :icon="FullScreen" @click="toggleFullscreen"></el-button>
+            </div>
+          </div>
+
+            <div class="timeline" @click="handleTimelineClick">
+              <div class="timeline-segment"
+                v-for="(seg, idx) in segmentStore.segments"
+                :key="idx"
+                :style="{
+                  left: `${(seg.startTime / videoStore.videoDuration) * 100}%`,
+                  width: `${(((seg.endTime || seg.startTime )- seg.startTime) / videoStore.videoDuration) * 100}%`,
+                }"
+                @click.stop="selectSegment(idx)"
+                :class="{ 
+                    active: segmentStore.selectedSegmentIdx === idx,
+
+                }"
+              >
+                <span class="segment-label">片段{{ idx + 1 }}</span>
+              </div>
+              <div class="play-cursor" :style="{ left: `${videoStore.playProgressPercent}%` }"></div>
+            </div>
+
+            <div class="segment-btn-group">
+              <el-button type="primary" @click="markSegmentStart">标记片段开始</el-button>
+              <el-button type="success" @click="markSegmentEnd">标记片段结束</el-button>
+              <el-button type="danger" @click="clearSegments">清空所有片段</el-button>
+            </div>
+        </div>
+
+        <div v-else class="no-video-tip">
+          <el-empty description="请先上传视频文件"></el-empty>
+        </div>
+      </el-card>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { useSegmentStore } from '@/store/ffmpeg/videoEditor';
+import { VideoPlay, VideoPause, Microphone, Mute, FullScreen } from '@element-plus/icons-vue'
+import { useVideoStore } from '@/store/ffmpeg/VideoStore';
+import { useVideoEditorStore } from '@/store/ffmpeg/videoEditor copy';
+const store = useVideoEditorStore()
+const segmentStore = useSegmentStore()
+const videoStore = useVideoStore()
+const videoRef = ref<HTMLVideoElement | null>(null);
+const isPlaying = ref<boolean>(false) // 是否正在播放视频
+
+const volume= ref<number>(0)  // 音量
+const isMuted = ref<boolean>(false) // 是否静音
+
+
+const cropContainerRef = ref<HTMLDivElement | null>(null);
+
+// 视频偏移量（居中显示时的margin）
+const videoOffsetX = ref(0);
+const videoOffsetY = ref(0);
+
+// 拖拽/缩放状态
+const isDragging = ref(false);
+const isResizing = ref(false);
+const resizeType = ref('');
+const startPos = ref({ x: 0, y: 0 });
+const startCropBox = ref({ x: 0, y: 0, width: 0, height: 0 });
+
+const cropBoxStyles = computed(() => {
+  if (!segmentStore.selectedSegment) {
+    return {}
+  }
+  const { cropX, cropY, cropWidth, cropHeight } = segmentStore.selectedSegment
+  return {
+    left: `${cropX + videoOffsetX.value}px`,
+    top: `${cropY + videoOffsetY.value}px`,
+    width: `${cropWidth}px`,
+    height: `${cropHeight}px`,
+  }
+})
+
+// 保存resize handler引用，防止内存泄漏
+let resizeHandler: () => void;
+
+
+
+
+// 核心：计算视频显示尺寸和偏移（适配宽高比）
+const calculateVideoDisplaySize = () => {
+  if (!cropContainerRef.value || !videoRef.value) return;
+  
+  const container = cropContainerRef.value;
+
+  
+  // 容器尺寸
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
+  
+  // 原始视频宽高比
+  const videoRatio = videoStore.videoAspectRatio;
+  const containerRatio = containerWidth / containerHeight;
+
+  let displayWidth : number
+  let displayHeight : number
+  if (containerRatio > videoRatio) {
+    // 容器更宽，高度填满，宽度自适应
+    displayHeight = containerHeight;
+    displayWidth = containerHeight * videoRatio;
+  } else {
+    // 容器更高，宽度填满，高度自适应
+    displayWidth = containerWidth;
+    displayHeight = containerWidth / videoRatio;
+  }
+
+  // 计算视频居中偏移
+  videoOffsetX.value = Math.floor((containerWidth - displayWidth) / 2);
+  videoOffsetY.value = Math.floor((containerHeight - displayHeight) / 2);
+
+  // 更新Store中的显示尺寸
+  store.videoDisplayWidth = Math.floor(displayWidth);
+  store.videoDisplayHeight = Math.floor(displayHeight);
+  
+};
+
+
+const handleTimeUpdate = () => {
+  if (!videoRef.value) return;
+  store.currentTime = videoRef.value.currentTime;
+  isPlaying.value = !videoRef.value.paused;
+};
+
+const handleVideoEnded = () => {
+  isPlaying.value = false;
+  store.currentTime = 0;
+  if (videoRef.value) {
+    videoRef.value.currentTime = 0;
+    videoRef.value.pause();
+  }
+};
+
+// 裁剪框拖拽逻辑
+const startCropBoxDrag = (e: MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (store.selectedSegmentIdx === -1 || !store.segments[store.selectedSegmentIdx].enableCrop) return;
+
+  isDragging.value = true;
+  startPos.value = { x: e.clientX, y: e.clientY };
+  startCropBox.value = {
+    x: store.cropBoxX,
+    y: store.cropBoxY,
+    width: store.cropBoxWidth,
+    height: store.cropBoxHeight,
+  };
+
+  document.addEventListener('mousemove', handleCropBoxDrag);
+  document.addEventListener('mouseup', stopCropBoxDrag);
+};
+
+
+const emit = defineEmits<{
+  (e: 'update:currentTime', value: number): void; 
+  (e: 'loadedMeta', value: object) : void
+}>();
+
+const props = defineProps<{
+    currentTime?: number
+}>()
+const videoMetaData = reactive({
+    duration: 0,
+    videoWidth: 0,
+    videoHeight: 0,
+    muted: true,
+    volume: 0
+})
+
+// 当前时间，数据双向绑定v-model:currentTime
+const currentTime = computed({
+    get () {
+        return props.currentTime
+    },
+    set(val: number) {
+        emit('update:currentTime', val)
+    }
+})
+
+// 视频事件处理
+const handleLoadedMetadata = () => {
+  if (!videoRef.value) return;
+
+    const { duration, videoWidth, videoHeight, volume, muted} = videoRef.value
+
+    videoMetaData.duration = duration
+    videoMetaData.videoWidth = videoWidth
+    videoMetaData.videoHeight = videoHeight
+    videoMetaData.volume = volume
+    videoMetaData.muted = muted
+
+    emit('loadedMeta', videoMetaData)
+
+    // 计算显示尺寸
+    calculateVideoDisplaySize();
+
+};
+
+const adjustCropBoxToVideo = () => {
+  // 先计算显示尺寸
+  calculateVideoDisplaySize();
+  // 同步裁剪框
+  if (store.selectedSegmentIdx !== -1) {
+    // store.syncCropBoxFromSegment(store.selectedSegmentIdx);
+  }
+};
+
+// 生命周期
+onMounted(() => {
+  // 窗口大小变化时重新计算显示尺寸
+  resizeHandler = () => {
+    calculateVideoDisplaySize();
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  // 视频加载完成后计算显示尺寸
+  watch([() => store.videoWidth, () => store.videoHeight], () => {
+    if (videoRef.value) {
+      calculateVideoDisplaySize();
+    }
+  });
+});
+
+onUnmounted(() => {
+  // 移除resize监听，防止内存泄漏
+  window.removeEventListener('resize', resizeHandler);
+  // 移除拖拽/缩放监听
+  document.removeEventListener('mousemove', handleCropBoxDrag);
+  document.removeEventListener('mouseup', stopCropBoxDrag);
+  document.removeEventListener('mousemove', handleCropBoxResize);
+  document.removeEventListener('mouseup', stopCropBoxResize);
+  // 释放视频URL
+  if (store.videoUrl) {
+    URL.revokeObjectURL(store.videoUrl);
+  }
+});
+
+
+const handleCropBoxDrag = (e: MouseEvent) => {
+  if (!isDragging.value || !videoRef.value || store.selectedSegmentIdx === -1) return;
+
+  const seg = store.segments[store.selectedSegmentIdx];
+  if (!seg.enableCrop) return;
+
+  const dx = e.clientX - startPos.value.x;
+  const dy = e.clientY - startPos.value.y;
+
+  // 新位置
+  let newX = startCropBox.value.x + dx;
+  let newY = startCropBox.value.y + dy;
+
+  // 限制在视频显示区域内
+  newX = Math.max(0, newX);
+  newY = Math.max(0, newY);
+  newX = Math.min(newX, store.videoDisplayWidth - store.cropBoxWidth);
+  newY = Math.min(newY, store.videoDisplayHeight - store.cropBoxHeight);
+
+  // 更新裁剪框位置
+  store.cropBoxX = newX;
+  store.cropBoxY = newY;
+
+  // 同步到片段（转换为原始尺寸）
+//   store.syncSegmentFromCropBox();
+};
+
+const stopCropBoxDrag = () => {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', handleCropBoxDrag);
+  document.removeEventListener('mouseup', stopCropBoxDrag);
+};
+
+// 裁剪框缩放逻辑
+const startCropBoxResize = (e: MouseEvent, type: string) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (store.selectedSegmentIdx === -1 || !store.segments[store.selectedSegmentIdx].enableCrop) return;
+
+  isResizing.value = true;
+  resizeType.value = type;
+  startPos.value = { x: e.clientX, y: e.clientY };
+  startCropBox.value = {
+    x: store.cropBoxX,
+    y: store.cropBoxY,
+    width: store.cropBoxWidth,
+    height: store.cropBoxHeight,
+  };
+
+  document.addEventListener('mousemove', handleCropBoxResize);
+  document.addEventListener('mouseup', stopCropBoxResize);
+};
+
+const handleCropBoxResize = (e: MouseEvent) => {
+  if (!isResizing.value || !videoRef.value || store.selectedSegmentIdx === -1) return;
+
+  const seg = store.segments[store.selectedSegmentIdx];
+  if (!seg.enableCrop) return;
+
+  const dx = e.clientX - startPos.value.x;
+  const dy = e.clientY - startPos.value.y;
+  let newX = startCropBox.value.x;
+  let newY = startCropBox.value.y;
+  let newWidth = startCropBox.value.width;
+  let newHeight = startCropBox.value.height;
+
+  // 根据缩放类型计算新尺寸
+  switch (resizeType.value) {
+    case 'tl':
+      newX = startCropBox.value.x + dx;
+      newY = startCropBox.value.y + dy;
+      newWidth = startCropBox.value.width - dx;
+      newHeight = startCropBox.value.height - dy;
+      break;
+    case 'tr':
+      newY = startCropBox.value.y + dy;
+      newWidth = startCropBox.value.width + dx;
+      newHeight = startCropBox.value.height - dy;
+      break;
+    case 'bl':
+      newX = startCropBox.value.x + dx;
+      newWidth = startCropBox.value.width - dx;
+      newHeight = startCropBox.value.height + dy;
+      break;
+    case 'br':
+      newWidth = startCropBox.value.width + dx;
+      newHeight = startCropBox.value.height + dy;
+      break;
+  }
+
+  // 最小尺寸限制
+  const minSize = 20;
+  newWidth = Math.max(minSize, newWidth);
+  newHeight = Math.max(minSize, newHeight);
+
+  // 限制在视频显示区域内
+  newX = Math.max(0, newX);
+  newY = Math.max(0, newY);
+  newWidth = Math.min(newWidth, store.videoDisplayWidth - newX);
+  newHeight = Math.min(newHeight, store.videoDisplayHeight - newY);
+
+  // 更新裁剪框
+  store.cropBoxX = newX;
+  store.cropBoxY = newY;
+  store.cropBoxWidth = newWidth;
+  store.cropBoxHeight = newHeight;
+
+  // 同步到片段并验证
+//   store.syncSegmentFromCropBox();
+//   store.validateCropParams(store.selectedSegmentIdx);
+};
+
+const stopCropBoxResize = () => {
+  isResizing.value = false;
+  resizeType.value = '';
+  document.removeEventListener('mousemove', handleCropBoxResize);
+  document.removeEventListener('mouseup', stopCropBoxResize);
+};
+
+// 视频控制方法
+const togglePlayPause = () => {
+  if (!videoRef.value) return;
+  if (videoRef.value.paused) {
+    videoRef.value.play();
+    isPlaying.value = true;
+  } else {
+    videoRef.value.pause();
+    isPlaying.value = false;
+  }
+};
+
+const seekVideo = () => {
+  if (!videoRef.value) return;
+  videoRef.value.currentTime = store.currentTime;
+};
+
+// 静音切换
+const toggleMute = () => {
+  if (!videoRef.value) return;
+  isMuted.value = !isMuted.value;
+  videoRef.value.muted = isMuted.value;
+};
+
+// 改变音量
+const setVolume = () => {
+  if (!videoRef.value) return;
+  videoRef.value.volume = volume.value;
+};
+
+const toggleFullscreen = () => {
+  if (!videoRef.value) return;
+  const videoContainer = videoRef.value.parentElement;
+  if (!videoContainer) return;
+
+  if (!document.fullscreenElement) {
+    if (videoContainer.requestFullscreen) {
+      videoContainer.requestFullscreen();
+    } else if ((videoContainer as any).webkitRequestFullscreen) {
+      (videoContainer as any).webkitRequestFullscreen();
+    } else if ((videoContainer as any).msRequestFullscreen) {
+      (videoContainer as any).msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if ((document as any).webkitExitFullscreen) {
+      (document as any).webkitExitFullscreen();
+    } else if ((document as any).msExitFullscreen) {
+      (document as any).msExitFullscreen();
+    }
+  }
+};
+
+// 时间轴处理
+const handleTimelineClick = (e: MouseEvent) => {
+  if (!store.videoDuration || !videoRef.value) return;
+  const timeline = e.currentTarget as HTMLElement;
+  const clickX = e.offsetX;
+  const percent = clickX / timeline.offsetWidth;
+  const targetTime = percent * store.videoDuration;
+  videoRef.value.currentTime = targetTime;
+  store.currentTime = targetTime;
+};
+
+// 片段操作
+const markSegmentStart = () => {
+  segmentStore.markSegmentStart(store.currentTime);
+  ElMessage.info(`已标记开始时间: ${store.formatTime(store.currentTime)}`);
+};
+
+const markSegmentEnd = () => {
+    const currentSegment =  segmentStore.segments[segmentStore.selectedSegmentIdx]
+    if (store.currentTime <= currentSegment.startTime) {
+        ElMessage.error('结束时间必须晚于开始时间！');
+        return;
+    }
+    segmentStore.markSegmentEnd(store.currentTime)
+    ElMessage.success(`已添加片段: ${store.formatTime(store.currentSegmentStart)} - ${store.formatTime(store.currentTime)}`);
+};
+
+// 选择片断
+const selectSegment = (idx: number) => {
+    if (!videoRef.value) return
+    segmentStore.selectSegment(idx);
+
+    const seg = segmentStore.segments[idx];
+    videoRef.value.currentTime = seg.startTime;
+
+    currentTime.value = seg.startTime;
+    ElMessage.info(`已选中片段 ${idx + 1}，视频已跳转到片段开始位置`);
+};
+
+
+
+// 清空片断
+const clearSegments = async () => {
+  const confirm = await ElMessageBox.confirm('确定删除所有片断', '提示', {
+    type: 'warning',
+  });
+  if (confirm) {
+    segmentStore.clearSegments();
+    ElMessage.info('已清空所有片段');
+  }
+};
+
+
+</script>
+
+<style lang="scss" scoped>
+
+.video-crop-container {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: #000;
+        cursor: pointer;
+    }
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+}
+
+
+
+.video-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background-color: #222;
+    color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+
+    .control-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 16px;
+        padding: 5px;
+        &:hover {
+            background-color: #444;
+        }
+    }
+
+}
+
+
+.timeline {
+  width: 100%;
+  height: 30px;
+  background: #333;
+  border-radius: 5px;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 8px;
+
+  .play-cursor {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    z-index: 3;
+    }
+}
+
+
+.timeline-segment {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(64, 158, 255, 0.3);
+    border: 1px solid #409eff;
+    border-radius: 4px;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &.active {
+        background: rgba(64, 158, 255, 0.6);
+    }
+}
+
+
+.segment-btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+
+
+</style>

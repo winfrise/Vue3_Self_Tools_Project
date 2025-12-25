@@ -14,6 +14,11 @@ import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-i
 import UnoCSS from 'unocss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+// 按需引入 Element Plus 的核心插件
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+
 // https://vitejs.dev/config/
 const root = process.cwd()
 
@@ -37,6 +42,24 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           // 开启defineModel
           defineModel: true
         }
+      }),
+      // 自动导入 Element Plus 相关 API（如 ElMessage、ElMessageBox 等）
+      AutoImport({
+        resolvers: [ElementPlusResolver()],
+        // 可选：指定自动导入的文件路径（默认生成在根目录）
+        dts: 'src/auto-imports.d.ts'
+      }),
+      // 自动导入 Element Plus 组件
+      Components({
+        resolvers: [
+          // 配置 Element Plus 解析器（支持自定义主题）
+          ElementPlusResolver({
+            // 若需自定义主题，设置 importStyle 为 'sass'
+            // importStyle: 'sass'
+          })
+        ],
+        // 可选：指定组件声明文件路径
+        dts: 'src/components.d.ts'
       }),
       VueJsx(),
       ServerUrlCopy(),
