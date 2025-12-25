@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { useVideoEditorStore } from '@/store/ffmpeg/videoEditor';
-import { useVideoStore } from '@/store/ffmpeg/VideoStore';
+import { useVideoStore } from '@/store/ffmpeg/videoStore';
 import SegementBar from './component/SegementBar.vue';
 import VideoControl from './component/VideoControl.vue';
 import VideoUpload from './component/VideoUpload.vue';
@@ -152,7 +152,6 @@ const videoStore = useVideoStore()
 }
 
 .segment-item {
-  padding: 15px;
   box-sizing: border-box;
   margin-bottom: 10px;
   transition: all 0.2s ease;

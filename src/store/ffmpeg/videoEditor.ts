@@ -333,10 +333,6 @@ export const useSegmentStore = defineStore('segment', () => {
   const batchCmds = ref(''); // 批量下载命令
 
   const selectedSegment = computed(() => {
-    if (selectedSegmentIdx.value < 0) {
-      return false
-    }
-
     return segments.value[selectedSegmentIdx.value]
   })
 
@@ -479,4 +475,4 @@ export const useSegmentStore = defineStore('segment', () => {
     generateBatchCmd
   }
 
-})
+}, {persist: false})

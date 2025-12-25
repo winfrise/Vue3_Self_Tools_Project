@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { useVideoEditorStore } from '@/store/ffmpeg/videoEditor';
-import { useVideoStore } from '@/store/ffmpeg/VideoStore';
+import { useVideoStore } from '@/store/ffmpeg/videoStore';
 const store = useVideoEditorStore();
 const videoStore = useVideoStore()
 

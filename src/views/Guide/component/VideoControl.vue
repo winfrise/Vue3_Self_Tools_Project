@@ -4,7 +4,7 @@
         <div class="top-actions-bar">
             <el-button 
                 type="danger" 
-                icon="el-icon-refresh-left"
+                :icon="RefreshLeft"
                 @click="handleFullReset"
                 :disabled="!videoStore.videoFile && segmentStore.segments.length === 0"
             >
@@ -54,33 +54,33 @@
 
               <!-- 进度条 -->
               <div class="progress-container">
-                <input
+                <el-input
                   type="range"
                   class="progress-bar"
                   min="0"
-                  :max="videoStore.videoDuration"
+                  :max="videoStore.duration"
                   v-model="videoStore.currentTime"
                   @input="seekVideo"
-                >
+                />
               </div>
 
                 <div class="time-display">
-                  {{ videoStore.formatTime(videoStore.currentTime) }} / {{ videoStore.formatTime(videoStore.videoDuration) }}
+                  {{ videoStore.formatTime(videoStore.currentTime) }} / {{ videoStore.formatTime(videoStore.duration) }}
                 </div>
 
               <div class="volume-control">
                 <!-- 静音图标 -->
-                <el-button class="control-btn" :icon="isMuted ? Mute : Microphone " @click="toggleMute"></el-button>
-                <input
+                <el-button class="control-btn" :icon="videoStore.muted ? Mute : Microphone " @click="toggleMute"></el-button>
+                <el-input
                   type="range"
                   class="volume-bar"
                   min="0"
                   max="1"
                   step="0.01"
-                  :disabled="isMuted"
-                  v-model="volume"
+                  :disabled="videoStore.muted"
+                  v-model="videoStore.volume"
                   @input="setVolume"
-                >
+                />
               </div>
 
               <!-- 全屏播放按钮 -->
@@ -95,8 +95,8 @@
                 :key="idx"
                 class="timeline-segment"
                 :style="{
-                  left: `${(seg.startTime / videoStore.videoDuration) * 100}%`,
-                  width: `${(((seg.endTime || seg.startTime )- seg.startTime) / videoStore.videoDuration) * 100}%`,
+                  left: `${(seg.startTime / videoStore.duration) * 100}%`,
+                  width: `${(((seg.endTime || seg.startTime )- seg.startTime) / videoStore.duration) * 100}%`,
                 }"
                 @click.stop="selectSegment(idx)"
                 :class="{ 
@@ -124,27 +124,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useSegmentStore } from '@/store/ffmpeg/videoEditor';
+import { useSegmentStore, useVideoEditorStore } from '@/store/ffmpeg/videoEditor';
 import { VideoPlay, VideoPause, Microphone, Mute, FullScreen } from '@element-plus/icons-vue'
-import { useVideoStore } from '@/store/ffmpeg/VideoStore';
-import { useVideoEditorStore } from '@/store/ffmpeg/videoEditor copy';
+import { useVideoStore } from '@/store/ffmpeg/videoStore';
+import { useVideoContainerStore } from '@/store/ffmpeg/VideoContainerStore';
+import { RefreshLeft } from '@element-plus/icons-vue'
+import { storeToRefs } from 'pinia';
 const store = useVideoEditorStore()
 const segmentStore = useSegmentStore()
 const videoStore = useVideoStore()
+const videoContainerStore = useVideoContainerStore()
 const videoRef = ref<HTMLVideoElement | null>(null);
 const isPlaying = ref<boolean>(false) // 是否正在播放视频
 
-const volume= ref<number>(0)  // 音量
-const isMuted = ref<boolean>(false) // 是否静音
 
 
 const cropContainerRef = ref<HTMLDivElement | null>(null);
 
-// 视频偏移量（居中显示时的margin）
-const videoOffsetX = ref(0);
-const videoOffsetY = ref(0);
 
 // 拖拽/缩放状态
 const isDragging = ref(false);
@@ -158,16 +156,15 @@ const cropBoxStyles = computed(() => {
     return {}
   }
   const { cropX, cropY, cropWidth, cropHeight } = segmentStore.selectedSegment
+  const { videoOffsetX, videoOffsetY, displayWidth, displayHeight} = storeToRefs(videoContainerStore)
   return {
     left: `${cropX + videoOffsetX.value}px`,
     top: `${cropY + videoOffsetY.value}px`,
-    width: `${cropWidth}px`,
-    height: `${cropHeight}px`,
+    width: `${cropWidth * displayWidth.value}px`,
+    height: `${cropHeight * displayHeight.value}px`,
   }
 })
 
-// 保存resize handler引用，防止内存泄漏
-let resizeHandler: () => void;
 
 // ========== 新增：处理完整重置 ==========
 const handleFullReset = async () => {
@@ -181,7 +178,7 @@ const handleFullReset = async () => {
         cancelButtonText: '取消'
       }
     );
-
+     videoStore.videoUrl = ''
     
     ElMessage.success('已重置所有状态，回到初始页面');
   } catch (error) {
@@ -191,56 +188,16 @@ const handleFullReset = async () => {
 
 
 
-// 核心：计算视频显示尺寸和偏移（适配宽高比）
-const calculateVideoDisplaySize = () => {
-  if (!cropContainerRef.value || !videoRef.value) return;
-  
-  const container = cropContainerRef.value;
-
-  
-  // 容器尺寸
-  const containerWidth = container.clientWidth;
-  const containerHeight = container.clientHeight;
-  
-  // 原始视频宽高比
-  const videoRatio = videoStore.videoAspectRatio;
-  const containerRatio = containerWidth / containerHeight;
-
-  let displayWidth, displayHeight;
-  if (containerRatio > videoRatio) {
-    // 容器更宽，高度填满，宽度自适应
-    displayHeight = containerHeight;
-    displayWidth = containerHeight * videoRatio;
-  } else {
-    // 容器更高，宽度填满，高度自适应
-    displayWidth = containerWidth;
-    displayHeight = containerWidth / videoRatio;
-  }
-
-  // 计算视频居中偏移
-  videoOffsetX.value = Math.floor((containerWidth - displayWidth) / 2);
-  videoOffsetY.value = Math.floor((containerHeight - displayHeight) / 2);
-
-  // 更新Store中的显示尺寸
-  store.videoDisplayWidth = Math.floor(displayWidth);
-  store.videoDisplayHeight = Math.floor(displayHeight);
-  
-  // 同步裁剪框
-  if (store.selectedSegmentIdx !== -1) {
-    // store.syncCropBoxFromSegment(store.selectedSegmentIdx);
-  }
-};
-
 
 const handleTimeUpdate = () => {
   if (!videoRef.value) return;
-  store.currentTime = videoRef.value.currentTime;
+  videoStore.currentTime = videoRef.value.currentTime;
   isPlaying.value = !videoRef.value.paused;
 };
 
 const handleVideoEnded = () => {
   isPlaying.value = false;
-  store.currentTime = 0;
+  videoStore.currentTime = 0;
   if (videoRef.value) {
     videoRef.value.currentTime = 0;
     videoRef.value.pause();
@@ -251,7 +208,8 @@ const handleVideoEnded = () => {
 const startCropBoxDrag = (e: MouseEvent) => {
   e.preventDefault();
   e.stopPropagation();
-  if (store.selectedSegmentIdx === -1 || !store.segments[store.selectedSegmentIdx].enableCrop) return;
+  const { selectedSegment } = segmentStore
+  if (!selectedSegment || !selectedSegment.enableCrop) return;
 
   isDragging.value = true;
   startPos.value = { x: e.clientX, y: e.clientY };
@@ -271,63 +229,37 @@ const startCropBoxDrag = (e: MouseEvent) => {
 const handleLoadedMetadata = () => {
   if (!videoRef.value) return;
   // 更新原始视频尺寸
-  store.updateVideoMetadata(
-    videoRef.value.duration,
-    videoRef.value.videoWidth,
-    videoRef.value.videoHeight
-  );
-  // 计算显示尺寸
-  calculateVideoDisplaySize();
-  // 初始化音量
-  volume.value = videoRef.value.volume;
-  isMuted.value = videoRef.value.muted;
+  const { duration, videoWidth, videoHeight} = videoRef.value
+
+  videoStore.duration = duration
+  videoStore.videoWidth= videoWidth
+  videoStore.videoHeight = videoHeight
+  videoStore.volume = videoRef.value.volume;
+  videoStore.muted = videoRef.value.muted;
+
+  const container = cropContainerRef.value;
+  if (container) {
+    videoContainerStore.containerWidth = container.clientWidth;
+    videoContainerStore.containerHeight = container.clientHeight;
+  }
 };
 
 const adjustCropBoxToVideo = () => {
-  // 先计算显示尺寸
-  calculateVideoDisplaySize();
-  // 同步裁剪框
-  if (store.selectedSegmentIdx !== -1) {
-    // store.syncCropBoxFromSegment(store.selectedSegmentIdx);
+  const container = cropContainerRef.value;
+  if (container) {
+    videoContainerStore.containerWidth = container.clientWidth;
+    videoContainerStore.containerHeight = container.clientHeight;
   }
 };
 
-// 生命周期
-onMounted(() => {
-  // 窗口大小变化时重新计算显示尺寸
-  resizeHandler = () => {
-    calculateVideoDisplaySize();
-  };
-  window.addEventListener('resize', resizeHandler);
-
-  // 视频加载完成后计算显示尺寸
-  watch([() => store.videoWidth, () => store.videoHeight], () => {
-    if (videoRef.value) {
-      calculateVideoDisplaySize();
-    }
-  });
-});
-
-onUnmounted(() => {
-  // 移除resize监听，防止内存泄漏
-  window.removeEventListener('resize', resizeHandler);
-  // 移除拖拽/缩放监听
-  document.removeEventListener('mousemove', handleCropBoxDrag);
-  document.removeEventListener('mouseup', stopCropBoxDrag);
-  document.removeEventListener('mousemove', handleCropBoxResize);
-  document.removeEventListener('mouseup', stopCropBoxResize);
-  // 释放视频URL
-  if (store.videoUrl) {
-    URL.revokeObjectURL(store.videoUrl);
-  }
-});
-
 
 const handleCropBoxDrag = (e: MouseEvent) => {
-  if (!isDragging.value || !videoRef.value || store.selectedSegmentIdx === -1) return;
+  const { selectedSegment, selectedSegmentIdx, segments } = storeToRefs(segmentStore)
+  if (!isDragging.value || !videoRef.value || !selectedSegment.value) return;
 
-  const seg = store.segments[store.selectedSegmentIdx];
-  if (!seg.enableCrop) return;
+
+  const { displayWidth, displayHeight} = videoContainerStore
+  if (!selectedSegment.value.enableCrop) return;
 
   const dx = e.clientX - startPos.value.x;
   const dy = e.clientY - startPos.value.y;
@@ -339,12 +271,13 @@ const handleCropBoxDrag = (e: MouseEvent) => {
   // 限制在视频显示区域内
   newX = Math.max(0, newX);
   newY = Math.max(0, newY);
-  newX = Math.min(newX, store.videoDisplayWidth - store.cropBoxWidth);
-  newY = Math.min(newY, store.videoDisplayHeight - store.cropBoxHeight);
+  newX = Math.min(newX, displayWidth - selectedSegment.value.cropWidth);
+  newY = Math.min(newY, displayHeight - selectedSegment.value.cropHeight);
 
+  segments.value[selectedSegmentIdx.value] = {...selectedSegment.value, cropX: newX, cropY: newY}
   // 更新裁剪框位置
-  store.cropBoxX = newX;
-  store.cropBoxY = newY;
+  // store.cropBoxX = newX;
+  // store.cropBoxY = newY;
 
   // 同步到片段（转换为原始尺寸）
 //   store.syncSegmentFromCropBox();
@@ -456,20 +389,20 @@ const togglePlayPause = () => {
 
 const seekVideo = () => {
   if (!videoRef.value) return;
-  videoRef.value.currentTime = store.currentTime;
+  videoRef.value.currentTime = videoStore.currentTime;
 };
 
 // 静音切换
 const toggleMute = () => {
   if (!videoRef.value) return;
-  isMuted.value = !isMuted.value;
-  videoRef.value.muted = isMuted.value;
+  videoStore.muted = !videoStore.muted;
+  videoRef.value.muted = videoStore.muted;
 };
 
 // 改变音量
 const setVolume = () => {
   if (!videoRef.value) return;
-  videoRef.value.volume = volume.value;
+  videoRef.value.volume = videoStore.volume;
 };
 
 const toggleFullscreen = () => {
@@ -498,29 +431,30 @@ const toggleFullscreen = () => {
 
 // 时间轴处理
 const handleTimelineClick = (e: MouseEvent) => {
-  if (!store.videoDuration || !videoRef.value) return;
+  if (!videoStore.duration || !videoRef.value) return;
   const timeline = e.currentTarget as HTMLElement;
   const clickX = e.offsetX;
   const percent = clickX / timeline.offsetWidth;
-  const targetTime = percent * store.videoDuration;
+  const targetTime = percent * videoStore.duration;
   videoRef.value.currentTime = targetTime;
-  store.currentTime = targetTime;
+  videoStore.currentTime = targetTime;
 };
 
-// 片段操作
+// 标记片断开始时间
 const markSegmentStart = () => {
-  segmentStore.markSegmentStart(store.currentTime);
+  segmentStore.markSegmentStart(videoStore.currentTime);
   ElMessage.info(`已标记开始时间: ${store.formatTime(store.currentTime)}`);
 };
 
+// 标记片断结束时间
 const markSegmentEnd = () => {
     const currentSegment =  segmentStore.segments[segmentStore.selectedSegmentIdx]
-    if (store.currentTime <= currentSegment.startTime) {
+    if (videoStore.currentTime <= currentSegment.startTime) {
         ElMessage.error('结束时间必须晚于开始时间！');
         return;
     }
-    segmentStore.markSegmentEnd(store.currentTime)
-    ElMessage.success(`已添加片段: ${store.formatTime(store.currentSegmentStart)} - ${store.formatTime(store.currentTime)}`);
+    segmentStore.markSegmentEnd(videoStore.currentTime)
+    ElMessage.success(`已添加片段: ${store.formatTime(segmentStore.selectedSegment.startTime)} - ${store.formatTime(store.currentTime)}`);
 };
 
 const selectSegment = (idx: number) => {
@@ -531,8 +465,6 @@ const selectSegment = (idx: number) => {
     store.currentTime = seg.startTime;
     ElMessage.info(`已选中片段 ${idx + 1}，视频已跳转到片段开始位置`);
 };
-
-
 
 const clearSegments = async () => {
   const confirm = await ElMessageBox.confirm('确定删除所有片断', '提示', {
@@ -614,9 +546,6 @@ const clearSegments = async () => {
   position: relative;
   width: 100%;
   height: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .video-player {
