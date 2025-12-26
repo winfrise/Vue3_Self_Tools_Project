@@ -20,31 +20,19 @@
             type: Number,
             required: true
         },
-        cropBoxData: {
-            type: Object as PropType<CropBoxData>,
-            required: true,
-        }
     })
 
     const emit = defineEmits<{
-        (e: 'update:cropBoxData', value: CropBoxData): void
+        (e: 'cropBoxChange', cropBoxData: { 
+            x: number; 
+            y: number; 
+            width: number; 
+            height: number;
+        }): void
     }>()
 
-    // const DEFAULT_CROP_BOX_DATA = {
-    //     x: 0, // 选框的水平坐标
-    //     y: 0, // 选框的垂直坐标
-    //     width: 0, // 选框的宽度
-    //     height: 0, // 选框的高度
-    //     percentX: 0, // 选框水平坐标（百分比）
-    //     percentY: 0, // 选框垂直坐标（百分比）
-    //     percentWidth: 0, // 选框宽度（百分比）
-    //     percentHeight: 0 // 选框高度（百分比）
-    // }
-
-    // const innerCropBoxData = ref<CropBoxData>()
-
+    let cropperInstance:Cropper
     const imgRef = ref<HTMLCanvasElement>()
-    const cropperRef = ref<Cropper>()
     const intiCropper = () => {
         if (!unref(imgRef)) return
         const imgEl = unref(imgRef)!
@@ -57,7 +45,7 @@
             ctx.fillRect(0, 0, imgEl.width, imgEl.height)
         }
 
-        cropperRef.value = new Cropper(imgEl, {
+        cropperInstance = new Cropper(imgEl, {
             aspectRatio: NaN,
             viewMode: 1,
             dragMode: 'move',
@@ -68,50 +56,24 @@
             toggleDragModeOnDblclick: false,
             checkCrossOrigin: false,
             ready() {
-                initCropBoxData()
+
             },
             cropmove() {
                 // getBase64()
             },
             crop(e: any) {
                 const { x, y, width, height} = e.detail
-                cropBoxData.value.x = Math.round(x)
-                cropBoxData.value.y = Math.round(y)
-                cropBoxData.value.width = Math.round(width)
-                cropBoxData.value.height = Math.round(height)
 
-                // cropBoxData.value = {
-                //     // 裁剪框绝对坐标/尺寸
-                //     x: Math.round(e.detail.x),
-                //     y: Math.round(e.detail.y),
-                //     width: Math.round(e.detail.width),
-                //     height: Math.round(e.detail.height),
-                //     // 相对画布的百分比（便于后续适配）
-                //     percentX: Number((e.detail.x / props.displayWidth).toFixed(4)),
-                //     percentY: Number((e.detail.y / props.displayHeight).toFixed(4)),
-                //     percentWidth: Number((e.detail.width / props.displayWidth).toFixed(4)),
-                //     percentHeight: Number((e.detail.height / props.displayHeight).toFixed(4))
-                // }
+                const cropBoxData = {
+                    x: Math.round(x),
+                    y: Math.round(y),
+                    width: Math.round(width),
+                    height: Math.round(height)
+                }
+
+                emit('cropBoxChange', cropBoxData)
             }
         })
-    }
-
-    const cropBoxData = computed<CropBoxData>({
-        get() {
-            return props.cropBoxData
-        },
-        set(newVal) {
-            emit('update:cropBoxData', newVal)
-        }
-    })
-    
-    watch(cropBoxData, () => {
-        initCropBoxData()
-    })
-
-    const initCropBoxData = () => {
-        if (!unref(cropperRef)) return
-        unref(cropperRef)!.setCropBoxData(cropBoxData.value)
     }
 
 
@@ -120,6 +82,20 @@
         intiCropper()
     })
 
+    const setCropBoxData = (data: { x?: number; y?: number; width?: number; height?: number }) => {
+        if (!cropperInstance) return
+        debugger
+        cropperInstance.setCropBoxData({
+            left: data.x,
+            top: data.y,
+            width: data.width,
+            height: data.height
+        })
+    }
+
+    defineExpose({
+        setCropBoxData
+    })
 </script>
 
 <style lang="scss" scoped>

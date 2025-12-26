@@ -33,6 +33,7 @@
                     v-model.number="cropBoxData.x"
                     type="number"
                     style="width: 80px; padding: 4px;"
+                    @change="updateCropBoxData"
                 />
             </div>
             <div>
@@ -41,6 +42,7 @@
                     v-model.number="cropBoxData.y"
                     type="number"
                     style="width: 80px; padding: 4px;"
+                    @change="updateCropBoxData"
                 />
             </div>
             <div>
@@ -49,6 +51,7 @@
                     v-model.number="cropBoxData.width"
                     type="number"
                     style="width: 80px; padding: 4px;"
+                    @change="updateCropBoxData"
                 />
             </div>
             <div>
@@ -57,16 +60,15 @@
                     v-model.number="cropBoxData.height"
                     type="number"
                     style="width: 80px; padding: 4px;"
+                    @change="updateCropBoxData"
                 />
             </div>
         </div>
-
-      <button @click="resetCropper" class="btn btn-secondary">重置裁剪框</button>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { ref, unref, computed, watch, PropType } from 'vue'
+    import { ref, unref, computed, PropType } from 'vue'
     import { CropBoxData } from '../types/cropper'
 
     const props = defineProps({
@@ -85,7 +87,7 @@
     })
 
     const emit = defineEmits<{
-        (e: 'update:cropBoxData', value: CropBoxData): void
+        (e: 'cropBoxDataChange', value: CropBoxData): void,
     }>()
 
     // 裁剪比例
@@ -112,38 +114,16 @@
         }
     })
 
-
-    // const DEFAULT_CROP_BOX_DATA = {
-    //     x: 0, // 选框的水平坐标
-    //     y: 0, // 选框的垂直坐标
-    //     width: 0, // 选框的宽度
-    //     height: 0, // 选框的高度
-    //     percentX: 0, // 选框水平坐标（百分比）
-    //     percentY: 0, // 选框垂直坐标（百分比）
-    //     percentWidth: 0, // 选框宽度（百分比）
-    //     percentHeight: 0 // 选框高度（百分比）
-    // }
-
-
-    const cropBoxData = computed({
-        get() {
-            return props.cropBoxData
-        },
-        set() {
-            
-        }
+    const cropBoxData = computed(() => {
+        return props.cropBoxData
     })
 
-    watch(cropBoxData, (newVal) => {
-        debugger
-        emit('update:cropBoxData', newVal as CropBoxData)
-    }, {deep: true})
-
-    // 重置裁剪框
-    const resetCropper = () => {
-        // if (cropperWrapperRef.value) {
-        //     cropperWrapperRef.value.resetCropper()
-        // }
+    // 手动更新裁剪框数据
+    const updateCropBoxData = () => {
+        const { x, y, width, height} = unref(cropBoxData)
+        emit('cropBoxDataChange', {
+            x, y, width, height
+        })
     }
 </script>
 

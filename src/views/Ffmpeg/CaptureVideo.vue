@@ -3,8 +3,12 @@
 <Test></Test>
 
 <el-card>
-    <CropperWrapperTest  v-model:cropBoxData="cropBoxData"  :displayWidth="400" :displayHeight="300" />
-    <CropperTools v-model:cropBoxData="cropBoxData"  :displayHeight="400" :displayWidth="300" />
+    <CropperWrapper ref="cropperWrapperRef"  :displayWidth="400" :displayHeight="300" 
+        @crop-box-change="handleCropBoxChange"
+    />
+    <CropperTools :cropBoxData="cropBoxData"  :displayHeight="400" :displayWidth="300"
+        @crop-box-data-change="handleCropBoxDataChange"
+    />
 </el-card>
 
 {{cropBoxData}}
@@ -15,20 +19,37 @@
 <script setup lang="ts">
     import Test from './components/Test.vue';
     import CroppingBox from './components/CroppingBox.vue';
-    import CropperWrapperTest from './components/CropperWrapperTest.vue';
+    import CropperWrapper from './components/CropperWrapperTest.vue';
     import CropperTools from './components/CropperTools.vue';
 
-    import { ref } from 'vue'
+    import { CropBoxData } from './types/cropper';
+
+    import { computed, ref, watch } from 'vue'
+    const cropperWrapperRef = ref<InstanceType<typeof CropperWrapper>>()
 
     const cropBoxData = ref({
-        x: 1, // 选框的水平坐标
-        y: 2, // 选框的垂直坐标
-        width: 3, // 选框的宽度
-        height: 4, // 选框的高度
-        percentX: 0, // 选框水平坐标（百分比）
-        percentY: 0, // 选框垂直坐标（百分比）
-        percentWidth: 0, // 选框宽度（百分比）
-        percentHeight: 0 // 选框高度（百分比）
+        x: 100, // 选框的水平坐标
+        y: 200, // 选框的垂直坐标
+        width: 300, // 选框的宽度
+        height: 300, // 选框的高度
     })
+
+    const cropBoxPercentData = computed(() => {
+        return {
+            percentX: 0, // 选框水平坐标（百分比）
+            percentY: 0, // 选框垂直坐标（百分比）
+            percentWidth: 0, // 选框宽度（百分比）
+            percentHeight: 0 // 选框高度（百分比）
+        }
+    })
+
+    // 接收裁剪框数据
+    const handleCropBoxChange = (data: CropBoxData) => {
+        cropBoxData.value = data
+    }
+
+    const handleCropBoxDataChange = (data: CropBoxData) => {
+        cropperWrapperRef.value?.setCropBoxData(data)
+    }
 
 </script>
