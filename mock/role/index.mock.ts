@@ -39,17 +39,17 @@ const adminList = [
     ]
   },
   {
-    path: '/guide',
+    path: '/ffmpeg',
     component: '#',
-    name: 'Guide',
+    name: 'FFMPEG',
     meta: {},
     children: [
       {
-        path: 'index',
-        component: 'views/Guide/Guide',
-        name: 'GuideDemo',
+        path: 'crop-video',
+        component: 'views/Ffmpeg/CaptureVideo',
+        name: 'CAPTURE_VIDEO',
         meta: {
-          title: '引导',
+          title: '截取视频',
           icon: 'vi-cib:telegram-plane'
         }
       }
