@@ -68,25 +68,30 @@
             toggleDragModeOnDblclick: false,
             checkCrossOrigin: false,
             ready() {
-                if (!unref(cropperRef)) return
-                unref(cropperRef)!.setCropBoxData(cropBoxData.value)
+                initCropBoxData()
             },
             cropmove() {
                 // getBase64()
             },
             crop(e: any) {
-                cropBoxData.value = {
-                    // 裁剪框绝对坐标/尺寸
-                    x: Math.round(e.detail.x),
-                    y: Math.round(e.detail.y),
-                    width: Math.round(e.detail.width),
-                    height: Math.round(e.detail.height),
-                    // 相对画布的百分比（便于后续适配）
-                    percentX: Number((e.detail.x / props.displayWidth).toFixed(4)),
-                    percentY: Number((e.detail.y / props.displayHeight).toFixed(4)),
-                    percentWidth: Number((e.detail.width / props.displayWidth).toFixed(4)),
-                    percentHeight: Number((e.detail.height / props.displayHeight).toFixed(4))
-                }
+                const { x, y, width, height} = e.detail
+                cropBoxData.value.x = Math.round(x)
+                cropBoxData.value.y = Math.round(y)
+                cropBoxData.value.width = Math.round(width)
+                cropBoxData.value.height = Math.round(height)
+
+                // cropBoxData.value = {
+                //     // 裁剪框绝对坐标/尺寸
+                //     x: Math.round(e.detail.x),
+                //     y: Math.round(e.detail.y),
+                //     width: Math.round(e.detail.width),
+                //     height: Math.round(e.detail.height),
+                //     // 相对画布的百分比（便于后续适配）
+                //     percentX: Number((e.detail.x / props.displayWidth).toFixed(4)),
+                //     percentY: Number((e.detail.y / props.displayHeight).toFixed(4)),
+                //     percentWidth: Number((e.detail.width / props.displayWidth).toFixed(4)),
+                //     percentHeight: Number((e.detail.height / props.displayHeight).toFixed(4))
+                // }
             }
         })
     }
@@ -99,6 +104,15 @@
             emit('update:cropBoxData', newVal)
         }
     })
+    
+    watch(cropBoxData, () => {
+        initCropBoxData()
+    })
+
+    const initCropBoxData = () => {
+        if (!unref(cropperRef)) return
+        unref(cropperRef)!.setCropBoxData(cropBoxData.value)
+    }
 
 
     onMounted(async () => {

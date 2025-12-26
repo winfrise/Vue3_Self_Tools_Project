@@ -129,11 +129,15 @@
         get() {
             return props.cropBoxData
         },
-        set(newVal) {
-            console.log(newVal)
-            emit('update:cropBoxData', newVal)
+        set() {
+            
         }
     })
+
+    watch(cropBoxData, (newVal) => {
+        debugger
+        emit('update:cropBoxData', newVal as CropBoxData)
+    }, {deep: true})
 
     // 重置裁剪框
     const resetCropper = () => {
