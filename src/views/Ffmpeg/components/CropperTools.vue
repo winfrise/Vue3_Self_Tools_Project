@@ -30,7 +30,7 @@
             <div>
                 <label>X坐标：</label>
                 <input
-                    v-model.number="innerCropBoxData.x"
+                    v-model.number="cropBoxData.x"
                     type="number"
                     style="width: 80px; padding: 4px;"
                 />
@@ -38,7 +38,7 @@
             <div>
                 <label>Y坐标：</label>
                 <input
-                    v-model.number="innerCropBoxData.y"
+                    v-model.number="cropBoxData.y"
                     type="number"
                     style="width: 80px; padding: 4px;"
                 />
@@ -46,7 +46,7 @@
             <div>
                 <label>宽度：</label>
                 <input
-                    v-model.number="innerCropBoxData.width"
+                    v-model.number="cropBoxData.width"
                     type="number"
                     style="width: 80px; padding: 4px;"
                 />
@@ -54,7 +54,7 @@
             <div>
                 <label>高度：</label>
                 <input
-                    v-model.number="innerCropBoxData.height"
+                    v-model.number="cropBoxData.height"
                     type="number"
                     style="width: 80px; padding: 4px;"
                 />
@@ -113,33 +113,27 @@
     })
 
 
-    const DEFAULT_CROP_BOX_DATA = {
-        x: 0, // 选框的水平坐标
-        y: 0, // 选框的垂直坐标
-        width: 0, // 选框的宽度
-        height: 0, // 选框的高度
-        percentX: 0, // 选框水平坐标（百分比）
-        percentY: 0, // 选框垂直坐标（百分比）
-        percentWidth: 0, // 选框宽度（百分比）
-        percentHeight: 0 // 选框高度（百分比）
-    }
+    // const DEFAULT_CROP_BOX_DATA = {
+    //     x: 0, // 选框的水平坐标
+    //     y: 0, // 选框的垂直坐标
+    //     width: 0, // 选框的宽度
+    //     height: 0, // 选框的高度
+    //     percentX: 0, // 选框水平坐标（百分比）
+    //     percentY: 0, // 选框垂直坐标（百分比）
+    //     percentWidth: 0, // 选框宽度（百分比）
+    //     percentHeight: 0 // 选框高度（百分比）
+    // }
 
-    const innerCropBoxData = ref<CropBoxData>(props.cropBoxData || DEFAULT_CROP_BOX_DATA)
 
-    watch(
-        () => props.cropBoxData,
-        (newVal) => {
-            innerCropBoxData.value = newVal
+    const cropBoxData = computed({
+        get() {
+            return props.cropBoxData
         },
-        { deep: true } // 初始化时立即同步一次
-    )
-
-    watch(
-        innerCropBoxData,
-        (newVal) => {
-            emit('update:cropBoxData', {...newVal})
+        set(newVal) {
+            console.log(newVal)
+            emit('update:cropBoxData', newVal)
         }
-    )
+    })
 
     // 重置裁剪框
     const resetCropper = () => {

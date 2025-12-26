@@ -68,7 +68,8 @@
             toggleDragModeOnDblclick: false,
             checkCrossOrigin: false,
             ready() {
-                // resetCropBox()
+                if (!unref(cropperRef)) return
+                unref(cropperRef)!.setCropBoxData(cropBoxData.value)
             },
             cropmove() {
                 // getBase64()
@@ -98,11 +99,6 @@
             emit('update:cropBoxData', newVal)
         }
     })
-
-    // watch(cropBoxData, () => {
-    //     if (!unref(cropperRef)) return
-    //     unref(cropperRef)!.setCropBoxData(cropBoxData.value)
-    // })
 
 
     onMounted(async () => {
