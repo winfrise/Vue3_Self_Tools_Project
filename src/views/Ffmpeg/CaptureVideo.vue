@@ -1,14 +1,18 @@
 <template>
+
 <CroppingBox image-url="https://hips.hearstapps.com/hmg-prod/images/%E5%AE%8B%E6%99%BA%E5%AD%9D-1597774015.jpg?crop=0.500xw:1.00xh;0.500xw,0&resize=640:*" />
 <Test></Test>
 
 <el-card>
-    <CropperWrapper ref="cropperWrapperRef"  :displayWidth="400" :displayHeight="300" 
+    <CropperWrapper ref="cropperWrapperRef"  
+        :displayWidth="400" 
+        :displayHeight="400"
+        :initCropBoxData="cropBoxData" 
         @crop-box-change="handleCropBoxChange"
     />
-    <CropperTools :cropBoxData="cropBoxData"  :displayHeight="400" :displayWidth="300"
+    <!-- <CropperTools :cropBoxData="cropBoxData"  :displayHeight="500" :displayWidth="600"
         @crop-box-data-change="handleCropBoxDataChange"
-    />
+    /> -->
 </el-card>
 
 {{cropBoxData}}
@@ -28,8 +32,8 @@
     const cropperWrapperRef = ref<InstanceType<typeof CropperWrapper>>()
 
     const cropBoxData = ref({
-        x: 100, // 选框的水平坐标
-        y: 200, // 选框的垂直坐标
+        x: 0, // 选框的水平坐标
+        y: 0, // 选框的垂直坐标
         width: 300, // 选框的宽度
         height: 300, // 选框的高度
     })
@@ -49,7 +53,7 @@
     }
 
     const handleCropBoxDataChange = (data: CropBoxData) => {
-        cropperWrapperRef.value?.setCropBoxData(data)
+        // cropperWrapperRef.value?.setCropBoxData(data)
     }
 
 </script>

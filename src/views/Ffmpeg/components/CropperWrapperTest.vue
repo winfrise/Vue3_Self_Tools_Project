@@ -1,14 +1,13 @@
 <template>
     <!-- 基于指定宽高的空白裁剪容器 -->
     <div class="cropper-wrapper">
-        <canvas ref="imgRef" :style="{width: displayWidth + 'px', height: displayHeight + 'px'}" />
+        <canvas ref="imgRef" :width="displayWidth + 'px'" :height="displayHeight + 'px' " :style="{width: displayWidth + 'px', height: displayHeight + 'px'}" />
     </div>
 </template>
 
 <script setup lang="ts">
     import { ref, unref, onMounted, nextTick, PropType, watch, computed } from 'vue'
     import Cropper from 'cropperjs'
-    import 'cropperjs/dist/cropper.min.css'
     import { CropBoxData } from '../types/cropper'
 
     const props = defineProps({
@@ -20,6 +19,9 @@
             type: Number,
             required: true
         },
+        initCropBoxData: {
+            type: Object as PropType<CropBoxData>
+        }
     })
 
     const emit = defineEmits<{
@@ -47,7 +49,7 @@
 
         cropperInstance = new Cropper(imgEl, {
             aspectRatio: NaN,
-            viewMode: 1,
+            viewMode: 2,
             dragMode: 'move',
             // cropBoxResizable: false,
             // cropBoxMovable: false,
@@ -56,14 +58,16 @@
             toggleDragModeOnDblclick: false,
             checkCrossOrigin: false,
             ready() {
-
+                if (props.initCropBoxData) {
+                    setCropBoxData(props.initCropBoxData)
+                }
             },
             cropmove() {
                 // getBase64()
             },
             crop(e: any) {
                 const { x, y, width, height} = e.detail
-
+                console.log(e)
                 const cropBoxData = {
                     x: Math.round(x),
                     y: Math.round(y),
@@ -84,7 +88,7 @@
 
     const setCropBoxData = (data: { x?: number; y?: number; width?: number; height?: number }) => {
         if (!cropperInstance) return
-        debugger
+
         cropperInstance.setCropBoxData({
             left: data.x,
             top: data.y,
