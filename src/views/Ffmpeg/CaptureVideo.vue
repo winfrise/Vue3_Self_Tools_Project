@@ -13,9 +13,7 @@
             <cropper-image
               ref="cropperImageRef"
               initial-center-size="contain"
-              :rotatable="true"
               :scalable="true"
-              :skewable="true"
               :translatable="true"
               src="https://fengyuanchen.github.io/cropperjs/picture.jpg",
               @transform="onImageTransform"
@@ -26,13 +24,13 @@
             <cropper-handle action="select" theme-color="rgba(51, 153, 255, 0.5)" :plain="true" />
 
             <cropper-selection
-              :x="selection.x"
-              :y="selection.y"
-              :width="selection.width"
-              :height="selection.height"
-              :aspect-ratio="selection.aspectRatio"
-              :initial-coverage="selection.initialCoverage"
-              :initial-aspect-ratio="selection.initialAspectRatio"
+              :x="initSelection.x"
+              :y="initSelection.y"
+              :width="initSelection.width"
+              :height="initSelection.height"
+              :aspect-ratio="initSelection.aspectRatio"
+              :initial-coverage="0.5"
+              :initial-aspect-ratio="4/3"
               :movable="true"
               :resizable="true"
               @change="onCropperSelectionChange"
@@ -50,7 +48,7 @@
               <cropper-handle action="w-resize" theme-color="#3399ff" />
               <cropper-handle action="ne-resize" theme-color="#3399ff" />
               <cropper-handle action="nw-resize" theme-color="#3399ff" />
-              <cropper-handle action="se-resize'" theme-color="#3399ff" />
+              <cropper-handle action="se-resize" theme-color="#3399ff" />
               <cropper-handle action="sw-resize" theme-color="#3399ff" />
               
             </cropper-selection>
@@ -66,6 +64,34 @@
             <el-descriptions-item label="y">{{ selectionData.y }}</el-descriptions-item>
             <el-descriptions-item label="width">{{ selectionData.width }}</el-descriptions-item>
             <el-descriptions-item label="height">{{ selectionData.height }}</el-descriptions-item>
+
+
+
+            <el-descriptions-item>
+            <label for="selectionAspectRatio">aspect-ratio</label>
+            <select 
+              v-model.number="initSelection.aspectRatio"
+            >
+              <option :value="undefined">
+                Free
+              </option>
+              <option :value="16/9">
+                16:9
+              </option>
+              <option :value="4/3">
+                4:3
+              </option>
+              <option :value="1">
+                1:1
+              </option>
+              <option :value="3/4">
+                3:4
+              </option>
+              <option :value="9/16">
+                9:16
+              </option>
+            </select>
+          </el-descriptions-item>
         </el-descriptions>
 
         <el-descriptions size="large" :column="1" title="Image Data">
@@ -95,15 +121,12 @@
     isMounted.value = true
   })
 
-  const selection = reactive({
-    hidden: false,
+  const initSelection = reactive({
     x: undefined,
     y: undefined,
     width: undefined,
     height: undefined,
-    aspectRatio: undefined,
-    initialAspectRatio: undefined,
-    initialCoverage: 0.5,
+    aspectRatio: undefined
   })
 
       const imageData = ref({
@@ -151,8 +174,8 @@ const onCropperSelectionChange = (event: CustomEvent) => {
 
       if (!checkInSelection(selection, maxSelection)) {
         event.preventDefault();
-        selectionData.value = event.detail;
       }
+      selectionData.value = event.detail;
   }
 
   // 验证是否在图片范围之内
