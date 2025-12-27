@@ -1,7 +1,7 @@
 <template>
 <el-card>
-  <div class="cropper-wrapper" style="position: relative;">
-    <cropper-canvas class="cropper-canvas"
+  <div class="cropper-wrapper" style="position: relative;" >
+    <cropper-canvas class="cropper-canvas" v-if="isMounted"
       :background="true"
       :disabled="false"
       :scaleStep="0.1"
@@ -25,15 +25,27 @@
       />
       <cropper-handle
         action="select",
+        theme-color="rgba(51, 153, 255, 0.5)"
         :plain="true"
-        theme-color="red"
       />
 
       <cropper-selection
-        :x="selection.x"
-        :y="selection.y"
-        :width="selection.width"
-        :height="selection.height"
+          :x="selection.x"
+          :y="selection.y"
+          :width="selection.width"
+          :height="selection.height"
+          :aspect-ratio="selection.aspectRatio"
+          :initial-coverage="selection.initialCoverage"
+          :hidden="selection.hidden"
+          :initial-aspect-ratio="selection.initialAspectRatio"
+          :movable="selection.movable"
+          :resizable="selection.resizable"
+          :zoomable="selection.zoomable"
+          :multiple="selection.multiple"
+          :keyboard="selection.keyboard"
+          :outlined="selection.outlined"
+          :precise="selection.precise"
+          :dynamic="selection.dynamic"
         @change="onSelectionChange"
       >
             <!-- 网格 -->
@@ -119,14 +131,33 @@
 
 
 <script setup lang="ts">
-  import { CropperCanvas, CropperSelection, CropperCrosshair, CropperGrid, CropperHandle, CropperShade  } from 'cropperjs';
-  import { reactive, ref } from 'vue';
+  import { CropperCanvas, CropperImage, CropperSelection, CropperCrosshair, CropperGrid, CropperHandle, CropperShade  } from 'cropperjs';
+  import { onMounted, reactive, ref, nextTick } from 'vue';
+
+  const isMounted = ref(false)
+
+  onMounted(async () => {
+    await nextTick()
+    isMounted.value = true
+  })
 
   const selection = reactive({
-    x: 10,
-    y: 20,
-    width: 100,
-    height: 200,
+    hidden: false,
+    x: undefined,
+    y: undefined,
+    width: undefined,
+    height: undefined,
+    aspectRatio: undefined,
+    initialAspectRatio: undefined,
+    initialCoverage: 0.5,
+    dynamic: false,
+    movable: true,
+    resizable: true,
+    zoomable: false,
+    multiple: false,
+    keyboard: false,
+    outlined: false,
+    precise: false,
   })
 
   const handles = ref([
