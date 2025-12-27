@@ -41,7 +41,13 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         script: {
           // 开启defineModel
           defineModel: true
-        }
+        },
+        template: {
+          compilerOptions: {
+            // 忽略 @cropper/elements 的 Web Components 标签
+            isCustomElement: (tag) => tag.startsWith('cropper-')
+          }
+      }
       }),
       // 自动导入 Element Plus 相关 API（如 ElMessage、ElMessageBox 等）
       AutoImport({
