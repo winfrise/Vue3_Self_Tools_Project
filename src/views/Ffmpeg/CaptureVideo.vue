@@ -12,6 +12,7 @@
 
             <cropper-image
               ref="cropperImageRef"
+              :hidden="false"
               initial-center-size="contain"
               :scalable="true"
               :translatable="true"
@@ -23,7 +24,7 @@
             <cropper-shade theme-color="rgba(0, 0, 0, 0.5)" />
             <cropper-handle action="select" theme-color="rgba(51, 153, 255, 0.5)" :plain="true" />
 
-            <cropper-selection
+            <cropper-selection ref="cropperSelectionRef"
               :x="initSelection.x"
               :y="initSelection.y"
               :width="initSelection.width"
@@ -94,6 +95,9 @@
           </el-descriptions-item>
         </el-descriptions>
 
+
+        <el-button type="primary" @click="cropperSelectionRef.$center()">$center()</el-button>
+
         <el-descriptions size="large" :column="1" title="Image Data">
             <el-descriptions-item label="scaleX">{{ imageData.scaleX }}</el-descriptions-item>
             <el-descriptions-item label="scaleY">{{ imageData.scaleY }}</el-descriptions-item>
@@ -102,6 +106,7 @@
             <el-descriptions-item label="translateX">{{ imageData.translateX }}</el-descriptions-item>
             <el-descriptions-item label="translateY">{{ imageData.translateY }}</el-descriptions-item>
         </el-descriptions>
+
 
       </el-card>
     </el-main>
@@ -153,6 +158,7 @@ const onImageTransform = (event: CustomEvent) => {
 
 const cropperCanvasRef = ref()
 const cropperImageRef = ref()
+const cropperSelectionRef = ref()
 const onCropperSelectionChange = (event: CustomEvent) => {
   const cropperCanvas = cropperCanvasRef.value as CropperCanvas;
 
