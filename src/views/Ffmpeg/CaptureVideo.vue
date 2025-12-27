@@ -1,132 +1,102 @@
 <template>
-<el-card>
-  <div class="cropper-wrapper" style="position: relative;" >
-    <cropper-canvas class="cropper-canvas" v-if="isMounted"
-      :background="true"
-      :disabled="false"
-      :scaleStep="0.1"
-      themeColor="#3399ff"
-    >
+  <el-container style="width: 1200px">
+    <el-main>
+      <el-card>
+          <cropper-canvas class="cropper-canvas" v-if="isMounted"
+            :background="true"
+            :disabled="false"
+            :scaleStep="0.1"
+            themeColor="#3399ff"
+          >
 
-      <cropper-image
-        ref="cropperImage"
-        initial-center-size="contain"
-        :rotatable="true"
-        :scalable="true"
-        :skewable="true"
-        :translatable="true"
-        src="https://fengyuanchen.github.io/cropperjs/picture.jpg",
-        @transform="onImageTransform"
-      />
-
-      <!-- 遮罩效果 -->
-      <cropper-shade
-        theme-color="rgba(0, 0, 0, 0.5)"
-      />
-      <cropper-handle
-        action="select",
-        theme-color="rgba(51, 153, 255, 0.5)"
-        :plain="true"
-      />
-
-      <cropper-selection
-          :x="selection.x"
-          :y="selection.y"
-          :width="selection.width"
-          :height="selection.height"
-          :aspect-ratio="selection.aspectRatio"
-          :initial-coverage="selection.initialCoverage"
-          :hidden="selection.hidden"
-          :initial-aspect-ratio="selection.initialAspectRatio"
-          :movable="selection.movable"
-          :resizable="selection.resizable"
-          :zoomable="selection.zoomable"
-          :multiple="selection.multiple"
-          :keyboard="selection.keyboard"
-          :outlined="selection.outlined"
-          :precise="selection.precise"
-          :dynamic="selection.dynamic"
-        @change="onSelectionChange"
-      >
-            <!-- 网格 -->
-            <cropper-grid
-                :rows="3"
-                :columns="3"
-                :bordered="true"
-                :covered="true",
-                themeColor="rgba(0, 0, 0, 0.5)"
+            <cropper-image
+              ref="cropperImage"
+              initial-center-size="contain"
+              :rotatable="true"
+              :scalable="true"
+              :skewable="true"
+              :translatable="true"
+              src="https://fengyuanchen.github.io/cropperjs/picture.jpg",
+              @transform="onImageTransform"
             />
 
-            <!-- 十字准线 -->
-            <cropper-crosshair
-                :centered="true"
-                themeColor="rgba(0, 0, 0, 0.5)"
+            <!-- 遮罩效果 -->
+            <cropper-shade
+              theme-color="rgba(0, 0, 0, 0.5)"
             />
             <cropper-handle
-              v-for="subhandle in handles"
-              :key="subhandle.action"
-              :action="subhandle.action"
-              :hidden="subhandle.hidden"
-              :theme-color="subhandle.themeColor"
+              action="select",
+              theme-color="rgba(51, 153, 255, 0.5)"
+              :plain="true"
             />
-      </cropper-selection>
-    </cropper-canvas>
-  </div>
-</el-card>
 
-<el-card>
-        <section>
-        <h6>Image Data</h6>
-        <ul>
-          <li>
-            <span>scaleX</span>
-            <span>{{ imageData.scaleX }}</span>
-          </li>
-          <li>
-            <span>skewY</span>
-            <span>{{ imageData.skewY }}</span>
-          </li>
-          <li>
-            <span>skewX</span>
-            <span>{{ imageData.skewX }}</span>
-          </li>
-          <li>
-            <span>scaleY</span>
-            <span>{{ imageData.scaleY }}</span>
-          </li>
-          <li>
-            <span>translateX</span>
-            <span>{{ imageData.translateX }}</span>
-          </li>
-          <li>
-            <span>translateY</span>
-            <span>{{ imageData.translateY }}</span>
-          </li>
-        </ul>
-      </section>
-      <section>
-        <h6>Selection Data</h6>
-        <ul>
-          <li>
-            <span>x</span>
-            <span>{{ selectionData.x }}</span>
-          </li>
-          <li>
-            <span>y</span>
-            <span>{{ selectionData.y }}</span>
-          </li>
-          <li>
-            <span>width</span>
-            <span>{{ selectionData.width }}</span>
-          </li>
-          <li>
-            <span>height</span>
-            <span>{{ selectionData.height }}</span>
-          </li>
-        </ul>
-      </section>
-</el-card>
+            <cropper-selection
+                :x="selection.x"
+                :y="selection.y"
+                :width="selection.width"
+                :height="selection.height"
+                :aspect-ratio="selection.aspectRatio"
+                :initial-coverage="selection.initialCoverage"
+                :hidden="selection.hidden"
+                :initial-aspect-ratio="selection.initialAspectRatio"
+                :movable="selection.movable"
+                :resizable="selection.resizable"
+                :zoomable="selection.zoomable"
+                :multiple="selection.multiple"
+                :keyboard="selection.keyboard"
+                :outlined="selection.outlined"
+                :precise="selection.precise"
+                :dynamic="selection.dynamic"
+              @change="onSelectionChange"
+            >
+                  <!-- 网格 -->
+                  <cropper-grid
+                      :rows="3"
+                      :columns="3"
+                      :bordered="true"
+                      :covered="true",
+                      themeColor="rgba(0, 0, 0, 0.5)"
+                  />
 
+                  <!-- 十字准线 -->
+                  <cropper-crosshair
+                      :centered="true"
+                      themeColor="rgba(0, 0, 0, 0.5)"
+                  />
+                  <cropper-handle
+                    v-for="subhandle in handles"
+                    :key="subhandle.action"
+                    :action="subhandle.action"
+                    :hidden="subhandle.hidden"
+                    :theme-color="subhandle.themeColor"
+                  />
+            </cropper-selection>
+          </cropper-canvas>
+      </el-card>
+    </el-main>
+
+    <el-main style="width: 300px">
+      <el-card>
+
+        <el-descriptions size="large" :column="1" title="Selection Data">
+            <el-descriptions-item label="x">{{ selectionData.x  }}</el-descriptions-item>
+            <el-descriptions-item label="y">{{ selectionData.y }}</el-descriptions-item>
+            <el-descriptions-item label="width">{{ selectionData.width }}</el-descriptions-item>
+            <el-descriptions-item label="height">{{ selectionData.height }}</el-descriptions-item>
+        </el-descriptions>
+        
+        <el-descriptions size="large" :column="1" title="Image Data">
+            <el-descriptions-item label="scaleX">{{ imageData.scaleX }}</el-descriptions-item>
+            <el-descriptions-item label="scaleY">{{ imageData.scaleY }}</el-descriptions-item>
+            <el-descriptions-item label="skewX">{{ imageData.skewX }}</el-descriptions-item>
+            <el-descriptions-item label="skewY">{{ imageData.skewY }}</el-descriptions-item>
+            <el-descriptions-item label="translateX">{{ imageData.translateX }}</el-descriptions-item>
+            <el-descriptions-item label="translateY">{{ imageData.translateY }}</el-descriptions-item>
+        </el-descriptions>
+
+      </el-card>
+    </el-main>
+  </el-container>
 </template>
 
 
@@ -235,12 +205,8 @@ const onSelectionChange = (event: CustomEvent) => {
 </script>
 
 <style lang="scss" scoped>
-  .cropper-wrapper {
+  .cropper-canvas {
     width: 800px;
     height: 600px;
-  }
-  .cropper-canvas {
-    width: 100%;
-    height: 100%;
   }
 </style>
