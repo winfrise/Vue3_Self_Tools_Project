@@ -42,15 +42,25 @@ const adminList = [
     path: '/ffmpeg',
     component: '#',
     name: 'FFMPEG',
-    meta: {},
+    meta: {
+      title: 'FFMPEG',
+      icon: 'vi-cib:telegram-plane'
+    },
     children: [
       {
-        path: 'crop-video',
-        component: 'views/Ffmpeg/CaptureVideo',
-        name: 'CAPTURE_VIDEO',
+        path: 'cropper-demo',
+        component: 'views/Ffmpeg/CropperDemo',
+        name: 'CropperDemo',
         meta: {
-          title: '截取视频',
-          icon: 'vi-cib:telegram-plane'
+          title: 'Cropper裁剪示例',
+        }
+      },
+      {
+        path: 'ffmpeg-demo',
+        component: 'views/FfmpegVideo/FfmpegDemo',
+        name: 'CuptureDemo',
+        meta: {
+          title: 'Ffmpeg示例',
         }
       }
     ]

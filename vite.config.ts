@@ -45,7 +45,10 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         template: {
           compilerOptions: {
             // 忽略 @cropper/elements 的 Web Components 标签
-            isCustomElement: (tag) => tag.startsWith('cropper-')
+            isCustomElement: (tag) => {
+              const customTags = ['cropper-canvas', 'cropper-image', 'cropper-selection', 'cropper-crosshair', 'cropper-grid', 'cropper-handle', 'cropper-shade']
+              return customTags.includes(tag)
+            }
           }
       }
       }),

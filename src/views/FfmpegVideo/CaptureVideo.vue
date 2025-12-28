@@ -17,7 +17,6 @@
 
 {{cropBoxData}}
 
-
 </template>
 
 <script setup lang="ts">
