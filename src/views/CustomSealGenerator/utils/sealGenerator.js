@@ -86,6 +86,16 @@ function drawText(ctx, text, x, y, options = {}) {
   ctx.fillText(text, x, y)
 }
 
+/**
+ * 绘制五角星（居中）
+ */
+function drawStar(ctx, { fontWeight, fontSize, fontFamily, centerText}) {
+  ctx.font = `${fontWeight} ${fontSize * 2}px "${fontFamily}", sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(centerText, 0, 0)
+}
+
 export function useSealGenerator(config, template, ctx) {
   const {
     company = 'XX有限公司',
@@ -132,7 +142,7 @@ export function useSealGenerator(config, template, ctx) {
   // ctx.translate(centerX, centerY);
   // ctx.rotate(rotation);
 
-  // === 绘制外圆 ===
+  // === 1. 绘制外圆 ===
   if (showLines) {
     ctx.lineWidth = outerLine;
     ctx.strokeStyle = color;
@@ -141,7 +151,7 @@ export function useSealGenerator(config, template, ctx) {
     ctx.stroke();
   }
 
-  // === 绘制内圆 ===
+  // === 2. 绘制内圆 ===
   if (showLines && innerLine > 0) {
     ctx.lineWidth = innerLine;
     ctx.beginPath();
@@ -149,7 +159,10 @@ export function useSealGenerator(config, template, ctx) {
     ctx.stroke();
   }
 
-  // === 绘制公司名（上半圆，逆时针）===
+     // === 3. 绘制五角星 ===
+  drawStar(ctx, {fontWeight, fontSize, fontFamily, centerText});
+
+  // === 4. 绘制公司名（上半圆，逆时针）===
   drawArcText(ctx, company, 92, true, {
     fontSize: fontSize - 2,
     fontFamily,
@@ -165,11 +178,7 @@ export function useSealGenerator(config, template, ctx) {
     color,
   })
 
-  // === 绘制中心内容（如 ★）===
-  ctx.font = `${fontWeight} ${fontSize * 2}px "${fontFamily}", sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(centerText, 0, 0)
+
 
   // === 绘制防伪码（下半圆弧形）===
   if (verifyCode) {
