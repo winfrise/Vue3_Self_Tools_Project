@@ -1,73 +1,47 @@
 // utils/sealGenerator.js
 
 /**
- * 沿圆弧绘制文字，并自动居中
+ * 在 Canvas 上沿圆弧绘制文字
  * @param {CanvasRenderingContext2D} ctx
- * @param {string} text
- * @param {number} radius
- * @param {boolean} isTop
- * @param {Object} options
+ * @param {string} text 要绘制的文字
+ * @param {number} radius 圆半径
+ * @param {boolean} isTop 是否在顶部（逆时针），否则在底部（顺时针）
+ * @param {Object} options { fontSize, fontFamily, fontWeight, color }
  */
 function drawArcText(ctx, text, radius, isTop = true, options = {}) {
-  const {
-    fontSize = 20,
-    fontFamily = 'FangSong',
-    fontWeight = 'bold',
-    color = '#e60000',
-    // 新增：控制弧长占比（0～1），1 = 全弧，0.8 = 留白20%
-    arcRatio = 0.9
-  } = options;
-
-  if (!text) return;
-
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  const chars = text.split('');
-  const totalChars = chars.length;
-  if (totalChars === 0) return;
-
-  // === 关键：动态计算起始角度，实现居中 ===
-
-  // 1. 定义最大可用弧度（避免贴到左右边缘）
-  const maxArcAngle = (4 * Math.PI) / 3; // 240°
-  const usableArc = maxArcAngle * arcRatio; // 实际使用弧长
-
-  // 2. 估算每个字符所需角度（简化：等分）
-  // 更精确做法：测量每个字符宽度，但性能开销大
-  const charAngle = usableArc / totalChars;
-
-  // 3. 计算整个文字块的总跨度
-  const totalSpan = charAngle * (totalChars - 1); // n个字有n-1个间隔
-
-  // 4. 确定弧的“中心角度”
-  const centerAngle = isTop ?  (3 * Math.PI) / 2 : Math.PI / 2; // 上半圆90°, 下半圆270°
-
-  // 5. 起始角度 = 中心角 - 总跨度/2
-  const startAngle = centerAngle - totalSpan / 2;
-
-  // === 开始绘制 ===
+  const { fontSize = 20, fontFamily = 'FangSong', fontWeight = 'bold', color = '#e60000' } = options
+  if (!text) return
+  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`
+  ctx.fillStyle = color
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  const chars = text.split('')
+  const totalChars = chars.length
+  if (totalChars === 0) return
+  // 弧长范围：约 240 度（避免左右两端太挤）
+  const totalAngle = (4 * Math.PI) / 3 // 240° in radians
+  let startAngle
+  if (isTop) {
+    // 上半圆：从 150° 到 30°（逆时 遍历）
+    startAngle = (5 * Math.PI) / 6 // 150°
+  } else {
+    // 下半圆：从 210° 到 330°（顺时 遍历）
+    startAngle = (7 * Math.PI) / 6 // 210°
+  }
   for (let i = 0; i < totalChars; i++) {
-    const angle = startAngle + i * charAngle;
-
-    // 如果是下半圆，需要镜像处理方向？→ 不需要！因为我们用 centerAngle 控制了位置
-    // 但要注意：下半圆的阅读顺序应为从左到右（顺时针）
-    // 所以我们可能需要反转字符顺序（仅当 isTop=false 时）
-    const charToDraw = isTop ? chars[i] : chars[totalChars - 1 - i];
-
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-
-    ctx.save();
-    ctx.translate(x, y);
-    // ✅ 旋转使字头朝外
-    ctx.rotate(angle + Math.PI / 2);
-    ctx.fillText(charToDraw, 0, 0);
-    ctx.restore();
+    const ratio = totalChars > 1 ? i / (totalChars - 1) : 0
+    const angle = startAngle + (isTop ? -1 : 1) * ratio * totalAngle
+    const x = Math.cos(angle) * radius
+    const y = Math.sin(angle) * radius
+    ctx.save()
+    ctx.translate(x, y)
+    // ✅ 关键修正：旋转 angle + π/2，使字符“正立朝外”
+    ctx.rotate(angle + Math.PI / 2)
+    ctx.fillText(chars[i], 0, 0)
+    ctx.restore()
   }
 }
+
 /**
  * ✨ 新增：绘制普通水平居中文字（用于章名）
  * @param {CanvasRenderingContext2D} ctx
