@@ -121,14 +121,16 @@ export function useSealGenerator(config, template, ctx) {
   ctx.imageSmoothingEnabled = true;
 
 
-  const centerX = size / 2;
-  const centerY = size / 2;
+  // const centerX = size / 2;
+  // const centerY = size / 2;
+  const centerX = ctx.canvas.width / 2
+  const centerY = ctx.canvas.height / 2
   const outerRadius = size * 0.45; // 外圈半径
   const innerRadius = size * 0.25; // 内圈半径
 
   // 缩放和平移画布到中心
   ctx.translate(centerX, centerY)
-  ctx.scale(size / 200, size / 200)
+  // ctx.scale(size / 200, size / 200)
 
   // 设置全局颜色
   ctx.strokeStyle = color
@@ -199,7 +201,7 @@ export function useSealGenerator(config, template, ctx) {
       ctx.save();
       // 关键：用蒙版裁剪当前印章内容
       ctx.globalCompositeOperation = 'destination-in';
-      ctx.drawImage(mask, 0, 0, size, size);
+      ctx.drawImage(mask, (ctx.canvas.width - size) / 2,  (ctx.canvas.height - size )/ 2 , size , size );
       ctx.restore();
     } catch (e) {
       console.warn('做旧效果应用失败:', e);
