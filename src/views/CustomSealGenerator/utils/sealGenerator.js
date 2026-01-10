@@ -107,8 +107,14 @@ export function useSealGenerator(config, template, ctx) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save()
 
-  const centerX = ctx.canvas.width / 2
-  const centerY = ctx.canvas.height / 2
+  // 启用抗锯齿
+  ctx.imageSmoothingEnabled = true;
+
+
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const outerRadius = size * 0.45; // 外圈半径
+  const innerRadius = size * 0.25; // 内圈半径
 
   // 缩放和平移画布到中心
   ctx.translate(centerX, centerY)
@@ -118,20 +124,29 @@ export function useSealGenerator(config, template, ctx) {
   ctx.strokeStyle = color
   ctx.fillStyle = color
 
+
+  // === 应用轻微随机旋转（模拟手盖）===
+  // const rotation = (Math.random() - 0.5) * 0.06; // ±1.7度
+
+  // ctx.save();
+  // ctx.translate(centerX, centerY);
+  // ctx.rotate(rotation);
+
   // === 绘制外圆 ===
   if (showLines) {
-    ctx.beginPath()
-    ctx.arc(0, 0, 100, 0, Math.PI * 2)
-    ctx.lineWidth = outerLine
-    ctx.stroke()
+    ctx.lineWidth = outerLine;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   // === 绘制内圆 ===
   if (showLines && innerLine > 0) {
-    ctx.beginPath()
-    ctx.arc(0, 0, 80, 0, Math.PI * 2)
-    ctx.lineWidth = innerLine
-    ctx.stroke()
+    ctx.lineWidth = innerLine;
+    ctx.beginPath();
+    ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   // === 绘制公司名（上半圆，逆时针）===
