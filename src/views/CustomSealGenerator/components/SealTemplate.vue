@@ -4,10 +4,10 @@
     shadow="hover"
     :class="{ active: selected }"
     @click="selectTemplate"
-    style="width: 100px; cursor: pointer; text-align: center;"
+    style="width: 100%; cursor: pointer; margin: 15px 0;"
   >
-    <img :src="imageSrc" alt="模板" style="width: 60px; height: 60px; object-fit: contain;" />
-    <div style="font-size: 12px; margin-top: 8px;">{{ label }}</div>
+    <el-image :src="imageSrc" alt="模板" style="width: 100%; height:80px; object-fit: contain;" />
+    <div style="line-height: 30px; text-align: center;">{{ label }}</div>
   </el-card>
 </template>
 
@@ -26,7 +26,10 @@ const selectTemplate = () => {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+:deep(.el-card__body) {
+  padding: 5px;
+}
 .active {
   border-color: #409eff !important;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);

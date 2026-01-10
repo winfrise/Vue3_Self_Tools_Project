@@ -2,33 +2,31 @@
 <template>
   <div class="seal-generator">
     <!-- 顶部操作栏 -->
-    <div class="header">
+    <el-header class="header">
       <el-button type="primary" @click="generateChinese">生成中文印章</el-button>
-      <el-button @click="generateEnglish">生成英文印章</el-button>
       <el-button type="success" @click="download">下载印章</el-button>
-    </div>
+    </el-header>
 
     <!-- 主体内容 -->
     <el-row :gutter="20" style="margin-top: 20px;">
       <!-- 左侧：模板选择 -->
-      <el-col :span="5">
-        <h3 style="margin-bottom: 16px;">印章模板</h3>
-        <el-row :gutter="10">
-          <el-col
+      <el-aside style="width: 140px;">
+        <el-card style="margin: 15px 0;">
+          <template #header>
+          印章模板
+          </template>
+          <SealTemplate
             v-for="(tmpl, key) in templates"
             :key="key"
-            :span="8"
-          >
-            <SealTemplate
-              :image-src="tmpl.image"
-              :label="tmpl.label"
-              :value="key"
-              :selected="currentTemplate === key"
-              @select="setTemplate"
-            />
-          </el-col>
-        </el-row>
-      </el-col>
+            :image-src="tmpl.image"
+            :label="tmpl.label"
+            :value="key"
+            :selected="currentTemplate === key"
+            @select="handleTemplateSelected"
+          />
+        </el-card>
+
+      </el-aside>
 
       <!-- 中间：预览 -->
       <el-col :span="10" style="display: flex; justify-content: center;">
@@ -40,20 +38,11 @@
         <SealConfigForm v-model="config" />
       </el-col>
     </el-row>
-
-    <!-- 免责声明 -->
-    <el-alert
-      title="郑重声明"
-      type="error"
-      description="本工具生成的印章仅供个人学习测试使用，请勿用于非法用途，否则后果自负！"
-      show-icon
-      style="margin-top: 20px;"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import SealTemplate from './components/SealTemplate.vue'
 import SealPreview from './components/SealPreview.vue'
 import SealConfigForm from './components/SealConfigForm.vue'
@@ -66,7 +55,7 @@ const templates = {
   square: { image: '/assets/templates/square.png', label: '方形印章' },
 }
 
-const config = reactive({
+const config = ref({
   company: '喜牛牛骑缝印章科技有限公司',
   sealName: '骑缝专用章',
   centerText: '★',
@@ -83,17 +72,13 @@ const config = reactive({
   fontWeight: 'bold',
 })
 
-function setTemplate(templateKey) {
+function handleTemplateSelected(templateKey) {
   currentTemplate.value = templateKey
 }
 
 function generateChinese() {
   // 可扩展逻辑
   console.log('生成中文印章')
-}
-
-function generateEnglish() {
-  console.log('生成英文印章')
 }
 
 function download() {

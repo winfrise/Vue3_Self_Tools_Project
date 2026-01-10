@@ -18,11 +18,11 @@
     </el-form-item>
 
     <el-form-item label="外边线宽度：">
-      <el-slider v-model="config.outerLine" :min="0" :max="10" show-input />
+      <el-input-number v-model="config.outerLine" :min="0" :max="10"/>
     </el-form-item>
 
     <el-form-item label="内边线宽度：">
-      <el-slider v-model="config.innerLine" :min="0" :max="10" show-input />
+      <el-input-number v-model="config.innerLine" :min="0" :max="10" />
     </el-form-item>
 
     <el-form-item label="显示边线：">
@@ -34,11 +34,11 @@
     </el-form-item>
 
     <el-form-item label="印章尺寸：">
-      <el-slider v-model="config.size" :min="100" :max="500" show-input />
+      <el-input-number v-model="config.size" :min="100" :max="500" />
     </el-form-item>
 
     <el-form-item label="老化程度：">
-      <el-slider v-model="config.aging" :min="0" :max="100" show-input />
+      <el-input-number v-model="config.aging" :min="0" :max="100" />
       <el-switch v-model="config.enableAging" style="margin-top: 8px" />
     </el-form-item>
 
