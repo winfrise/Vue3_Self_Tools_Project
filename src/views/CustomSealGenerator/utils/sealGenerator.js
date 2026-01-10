@@ -1,5 +1,5 @@
 // utils/sealGenerator.js
-
+import { createAgingMask } from "./createAgingMask";
 /**
  * 沿圆弧绘制文字，并自动居中
  * @param {CanvasRenderingContext2D} ctx
@@ -166,20 +166,19 @@ export function useSealGenerator(config, template, ctx) {
     })
   }
 
-  // === 老化效果（可选）===
-  if (enableAging) {
-    const noise = Array.from({ length: 200 }, () =>
-      Array.from({ length: 200 }, () => Math.random())
-    )
-    for (let i = 0; i < 200; i++) {
-      for (let j = 0; j < 200; j++) {
-        if (noise[i][j] < aging / 100) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
-          ctx.fillRect(i - 100, j - 100, 1, 1)
-        }
-      }
+  ctx.restore()
+
+ // === 3. ✅ 新增：应用做旧效果 ===
+  if (enableAging && aging > 0) {
+    try {
+      const mask = createAgingMask(size, aging);
+      ctx.save();
+      // 关键：用蒙版裁剪当前印章内容
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.drawImage(mask, 0, 0, size, size);
+      ctx.restore();
+    } catch (e) {
+      console.warn('做旧效果应用失败:', e);
     }
   }
-
-  ctx.restore()
 }
