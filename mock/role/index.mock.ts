@@ -6,6 +6,25 @@ const timeout = 1000
 
 const adminList = [
   {
+    path: '/custom-page',
+    component: '#',
+    name: '用户自定义页面',
+    meta: {
+      title: 'FFMPEG',
+      icon: 'vi-cib:telegram-plane'
+    },
+    children: [
+      {
+        path: 'custom-seal-generator',
+        component: 'views/CustomSealGenerator/SealGenerator',
+        name: 'CustomSealGenerator',
+        meta: {
+          title: '印章生成大师',
+        }
+      },
+    ]
+  },
+  {
     path: '/dashboard',
     component: '#',
     redirect: '/dashboard/analysis',
@@ -57,7 +76,7 @@ const adminList = [
       },
       {
         path: 'ffmpeg-demo',
-        component: 'views/FfmpegVideo/FfmpegDemo',
+        component: 'views/Guide/Guide',
         name: 'CuptureDemo',
         meta: {
           title: 'Ffmpeg示例',
