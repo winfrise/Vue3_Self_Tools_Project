@@ -58,34 +58,50 @@ const templates = {
 const config = ref({
   size: 240,
   color: '#e60000',
-  fontFamily: 'FangSong',
-  fontSize: 20,
-  fontWeight: 'bold',
   enableAging: true,
   aging: 50,
 
- 
   companyName: '北京小米科技有限公司',
-  companyRadius: '80',
-  enableCustomCompanyNameStyle: true,
+  companyRadius: 85,
   companyFontFamily: 'FangSong',
-  companyFontSize: 24,
+  companyFontSize: 30,
   conpanyFontWeight: 'normal',
   companyColor: '',
+  companyWordSpace: 0,
 
   sealName: '骑行专用章',
   sealNameStartY: 40,
-  enableCustomSealNameStyle: true,
   sealNameFontFamily: 'FangSong',
   sealNameFontSize: 24,
   sealNameFontWeight: 'normal',
   sealNameColor: '',
+  sealNameWordSpace: 0,
 
   centerText: '★',
-  verifyCode: '1234567890123ZHANG',
-  outerLine: 4,
-  innerLine: 1,
-  showLines: true,
+
+  verifyCode: '1234567890123',
+  verifyCodeRadius: 90,
+  verifyCodeFontFamily: 'FangSong',
+  verifyCodeFontSize: 14,
+  verifyCodeFontWeight: 'normal',
+  verifyCodeColor: '',
+  verifyCodeWordSpace: 0,
+
+
+  enableCircleLine: true,
+  circleLineWidth: 4,
+  circleLineRadius: 120,
+  circleLineColor: '',
+
+  enableOuterCircleLineWidth: false,
+  outerCircleLineWidth: 1,
+  outerCircleLineRadius: 130,
+  outerCircleLineColor: '',
+
+  enableInnerCircleLine: false,
+  innerCircleLineWidth: 1,
+  innerCircleLineRadius: 110,
+  innerCircleLineColor: '',
 })
 
 function handleTemplateSelected(templateKey) {

@@ -96,24 +96,79 @@ function drawStar(ctx, { fontWeight, fontSize, fontFamily, centerText}) {
   ctx.fillText(centerText, 0, 0)
 }
 
+
+function drawCircle(
+  ctx,
+  x,
+  y,
+  radius,
+  options = {}
+) {
+  const {
+    color = 'transparent',
+    lineWidth = 1,
+  } = options;
+
+  if (radius <= 0) return;
+
+  ctx.save();
+  
+  ctx.lineWidth = lineWidth;
+  
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+
+  ctx.restore();
+}
+
 export function useSealGenerator(config, template, ctx) {
   const {
-
     companyName = 'xxx有限公司',
     companyRadius = 80,
-    enableCustomCompanyNameStyle = false,
+    companyFontSize,
+    companyFontFamily,
+    companyFontWeight,
+    companyColor,
     
     sealName = '合同专用章',
-    enableCustomSealNameStyle = false,
     sealNameStartY = 40,
+    sealNameFontSize,
+    sealNameFontFamily,
+    sealNameFontWeight,
+    sealNameColor,
 
     centerText = '★',
+
     verifyCode = '',
+    verifyCodeFontSize,
+    verifyCodeRadius,
+    verifyCodeFontFamily,
+    verifyCodeFontWeight,
+    verifyCodeColor,
+
     color = '#e60000',
     size = 240,
-    outerLine = 4,
-    innerLine = 1,
-    showLines = true,
+
+    enableCircleLine = true,
+    circleLineWidth,
+    circleLineColor,
+    circleLineRadius,
+
+    enableInnerCircleLine = false,
+    innerCircleLineWidth,
+    innerCircleLineColor,
+    innerCircleLineRadius,
+
+    enableOuterCircleLine = false,
+    outerCircleLineWidth,
+    outerCircleLineColor,
+    outerCircleLineRadius,
+
+
     enableAging = false,
     aging = 90,
     fontFamily = 'FangSong',
@@ -151,46 +206,51 @@ export function useSealGenerator(config, template, ctx) {
   // ctx.translate(centerX, centerY);
   // ctx.rotate(rotation);
 
-  // === 1. 绘制外圆 ===
-  if (showLines) {
-    ctx.lineWidth = outerLine;
-    ctx.strokeStyle = color;
-    ctx.beginPath();
-    ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
-    ctx.stroke();
+  // === 1. 绘制圆 ===
+  if (enableCircleLine) {
+    drawCircle(ctx, 0, 0, circleLineRadius, {
+      lineWidth: circleLineWidth,
+      color: circleLineColor || color,
+    })
   }
 
-  // === 2. 绘制内圆 ===
-  if (showLines && innerLine > 0) {
-    ctx.lineWidth = innerLine;
-    ctx.beginPath();
-    ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-    ctx.stroke();
+
+    // === 1. 绘制外圆 ===
+  if (enableOuterCircleLine) {
+    drawCircle(ctx, 0, 0, outerCircleLineRadius, {
+      lineWidth: outerCircleLineWidth,
+      color: outerCircleLineColor || color,
+    })
   }
+
+  if (enableInnerCircleLine) {
+    drawCircle(ctx, 0, 0, innerCircleLineRadius, {
+      lineWidth: innerCircleLineWidth,
+      color: innerCircleLineColor || color,
+    })
+  }
+
+
+  // === 2. 绘制内圆 ===
+  // if (showLines && innerLine > 0) {
+  //   ctx.lineWidth = innerLine;
+  //   ctx.beginPath();
+  //   ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+  //   ctx.stroke();
+  // }
 
      // === 3. 绘制五角星 ===
   drawStar(ctx, {fontWeight, fontSize, fontFamily, centerText});
 
-  // === 4. 绘制公司名（上半圆，逆时针）===
-
-  const companyFontFamily = (enableCustomCompanyNameStyle ? config.companyFontFamily : fontFamily) ?? fontFamily
-  const companyFontSize = (enableCustomCompanyNameStyle ? config.companyFontSize : fontSize) ?? fontSize
-  const companyFontWeight = (enableCustomCompanyNameStyle ? config.companyFontWeight : fontWeight) ?? fontWeight
-  const companyColor = (enableCustomCompanyNameStyle ? config.companyColor : color) ?? color ?? color
-
-
+  // === 4. 绘制公司名（上半圆，逆时针）==
   drawArcText(ctx, companyName, companyRadius, true, {
-    fontSize: companyFontSize,
-    fontFamily: companyFontFamily,
-    fontWeight: companyFontWeight,
-    color: companyColor,
+    fontSize: companyFontSize || fontSize,
+    fontFamily: companyFontFamily || fontFamily,
+    fontWeight: companyFontWeight || fontWeight,
+    color: companyColor || color,
   })
 
   // === 绘制章名 ===
-  const sealNameFontFamily = (enableCustomSealNameStyle ? config.sealNameFontFamily : fontFamily) ?? fontFamily
-  const sealNameFontSize = (enableCustomSealNameStyle ? config.sealNameFontSize : fontSize) ?? fontSize
-  const sealNameFontWeight = (enableCustomSealNameStyle ? config.sealNameFontWeight : fontWeight) ?? fontWeight
-  const sealNameColor = (enableCustomSealNameStyle ? config.sealNameColor : color) ?? color ?? color
   drawText(ctx, sealName, 0, sealNameStartY, {
     fontSize: sealNameFontSize,
     fontFamily: sealNameFontFamily,
@@ -201,14 +261,12 @@ export function useSealGenerator(config, template, ctx) {
 
 
   // === 绘制防伪码（下半圆弧形）===
-  if (verifyCode) {
-    drawArcText(ctx, verifyCode, 65, false, {
-      fontSize: fontSize - 6,
-      fontFamily,
-      fontWeight,
-      color,
-    })
-  }
+  drawArcText(ctx, verifyCode, verifyCodeRadius, false, {
+    fontSize: verifyCodeFontSize,
+    fontFamily: verifyCodeFontFamily,
+    fontWeight: verifyCodeFontWeight,
+    color: verifyCodeColor,
+  })
 
   ctx.restore()
 
