@@ -68,6 +68,8 @@ const config = ref({
   conpanyFontWeight: 'normal',
   companyColor: '',
   companyNameLetterSpacing: 5,
+  companyNameWidthRatio: 1,
+  companyNameHeightRatio: 1,
 
   sealName: '骑行专用章',
   sealNameStartY: 50,
@@ -87,7 +89,7 @@ const config = ref({
   verifyCodeFontSize: 14,
   verifyCodeFontWeight: 'normal',
   verifyCodeColor: '',
-  verifyCodeLetterSpacing: -180,
+  verifyCodeLetterSpacing: 0,
 
 
   enableCircleLine: true,

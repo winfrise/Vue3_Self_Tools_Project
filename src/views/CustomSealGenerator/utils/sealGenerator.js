@@ -16,6 +16,8 @@ export function useSealGenerator(config, template, ctx) {
     companyFontWeight,
     companyColor,
     companyNameLetterSpacing,
+    companyNameWidthRatio,
+    companyNameHeightRatio,
     
     sealName = '合同专用章',
     sealNameStartY = 40,
@@ -137,6 +139,8 @@ export function useSealGenerator(config, template, ctx) {
     fontWeight: companyFontWeight || fontWeight,
     color: companyColor || color,
     letterSpacing: companyNameLetterSpacing, 
+    widthRatio: companyNameWidthRatio,
+    heightRatio: companyNameHeightRatio,
   })
 
   // === 绘制章名 ===

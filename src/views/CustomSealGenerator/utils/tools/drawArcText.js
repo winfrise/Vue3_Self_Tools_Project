@@ -1,11 +1,3 @@
-/**
- * 沿圆弧绘制文字，并自动居中
- * @param {CanvasRenderingContext2D} ctx
- * @param {string} text
- * @param {number} radius
- * @param {boolean} isTop
- * @param {Object} options
- */
 export function drawArcText(ctx, text, radius, isTop = true, options = {}) {
   const {
     fontSize = 20,
@@ -13,7 +5,9 @@ export function drawArcText(ctx, text, radius, isTop = true, options = {}) {
     fontWeight = 'bold',
     color = '#e60000',
     arcRatio = 0.9,
-    letterSpacing = 0 // 新增：字符间距（像素）
+    letterSpacing = 0,
+    widthRatio = 1,
+    heightRatio = 1
   } = options;
 
   if (!text) return;
@@ -23,44 +17,34 @@ export function drawArcText(ctx, text, radius, isTop = true, options = {}) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  const chars = text.split('');
+  const chars = Array.from(text);
   const totalChars = chars.length;
   if (totalChars === 0) return;
 
-  // === 关键：动态计算起始角度，实现居中 + 字符间距 ===
-
-  const maxArcAngle = (4 * Math.PI) / 3; // 240°
+  const maxArcAngle = (4 * Math.PI) / 3;
   const usableArc = maxArcAngle * arcRatio;
 
-  // 估算单个字符的平均宽度（简化处理，用一个典型汉字）
-  const avgCharWidth = ctx.measureText('国').width || fontSize * 0.8;
-  
-  // 将 letterSpacing 转换为角度增量（弧度）
-  const spacingAngle = letterSpacing / radius;
+  // 精确测量每个字符的实际宽度
+  const charWidths = [];
+  let totalCharWidth = 0;
 
-  // 每个字符占据的角度 = 字符本身所需角度 + 间距角度
-  // 注意：n 个字符有 (n - 1) 个间距
-  const totalSpacingAngle = spacingAngle * (totalChars - 1);
-  const totalTextAngle = usableArc - totalSpacingAngle;
-
-  if (totalTextAngle <= 0) {
-    console.warn('弧长不足或间距过大，无法绘制文字');
-    return;
+  for (let i = 0; i < totalChars; i++) {
+    const charWidth = ctx.measureText(chars[i]).width || fontSize;
+    charWidths.push(charWidth);
+    totalCharWidth += charWidth;
   }
 
-  const charAngle = totalTextAngle / totalChars; // 每个字符“内容”占的角度
-
-  // 总跨度 = 所有字符内容角度 + 所有间距角度
-  const totalSpan = charAngle * (totalChars - 1) + totalSpacingAngle;
+  const avgCharWidth = totalCharWidth / totalChars;
+  const spacingAngle = letterSpacing / radius;
+  const scaledAvgCharWidth = avgCharWidth * widthRatio;
+  const charAngle = (scaledAvgCharWidth / radius) + spacingAngle;
+  const totalSpan = charAngle * totalChars - spacingAngle;
 
   const centerAngle = isTop ? (3 * Math.PI) / 2 : Math.PI / 2;
-  const startAngle = centerAngle - totalSpan / 2;
+  const startAngle = centerAngle - totalSpan / 2 + charAngle / 2;
 
-  // === 开始绘制 ===
   for (let i = 0; i < totalChars; i++) {
-    // 累计角度：前 i 个字符的内容角度 + 前 i 个间距
-    const angle = startAngle + i * charAngle + i * spacingAngle;
-
+    const angle = startAngle + i * charAngle;
     const charToDraw = isTop ? chars[i] : chars[totalChars - 1 - i];
 
     const x = Math.cos(angle) * radius;
@@ -68,8 +52,14 @@ export function drawArcText(ctx, text, radius, isTop = true, options = {}) {
 
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(angle + Math.PI / 2); // 字头朝外
+    ctx.rotate(angle + (isTop ? Math.PI / 2 : -Math.PI / 2));
+    
+    // 先设置缩放，再绘制文字
+    ctx.scale(widthRatio, heightRatio);
+    
+    // 使用未缩放的坐标，因为缩放已经应用到上下文中
     ctx.fillText(charToDraw, 0, 0);
+    
     ctx.restore();
   }
 }
