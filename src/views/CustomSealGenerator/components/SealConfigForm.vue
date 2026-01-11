@@ -4,66 +4,179 @@
     <template #header>
       印章配置
     </template>
-    <el-form label-width="100px" size="small">
-      <el-form-item label="公司名称：">
-        <el-input v-model="config.company" placeholder="请输入公司名称" />
-      </el-form-item>
+    <el-form  size="small" inline>
 
-      <el-form-item label="章名：">
-        <el-input v-model="config.sealName" placeholder="如：合同专用章" />
-      </el-form-item>
+      <div>
+        <el-form-item label="印章颜色：">
+          <el-color-picker v-model="config.color" show-alpha />
+        </el-form-item>
 
-      <el-form-item label="中心内容：">
-        <el-input v-model="config.centerText" placeholder="如：★" />
-      </el-form-item>
 
-      <el-form-item label="防伪码：">
-        <el-input v-model="config.verifyCode" placeholder="如：1234567890" />
-      </el-form-item>
+        <el-form-item label="印章尺寸：">
+          <el-input-number v-model="config.size" :min="100" :max="500" />
+        </el-form-item>
 
-      <el-form-item label="外边线宽度：">
-        <el-input-number v-model="config.outerLine" :min="0" :max="10"/>
-      </el-form-item>
+        <el-form-item label="老化程度：">
+          <el-switch v-model="config.enableAging" />
+          <el-input-number v-model="config.aging" :disabled="!config.enableAging" :min="0" :max="100" style="margin-left: 10px;" />
+        </el-form-item>
+      </div>
 
-      <el-form-item label="内边线宽度：">
-        <el-input-number v-model="config.innerLine" :min="0" :max="10" />
-      </el-form-item>
+      <div>
+        <el-form-item label="字体：">
+          <el-select style="width: 80px;" v-model="config.fontFamily">
+            <el-option label="仿宋" value="FangSong" />
+            <el-option label="楷体" value="KaiTi" />
+            <el-option label="宋体" value="SimSun" />
+            <el-option label="黑体" value="SimHei" />
+          </el-select>
+        </el-form-item>
 
-      <el-form-item label="显示边线：">
-        <el-switch v-model="config.showLines" />
-      </el-form-item>
-
-      <el-form-item label="印章颜色：">
-        <el-color-picker v-model="config.color" show-alpha />
-      </el-form-item>
-
-      <el-form-item label="印章尺寸：">
-        <el-input-number v-model="config.size" :min="100" :max="500" />
-      </el-form-item>
-
-      <el-form-item label="老化程度：">
-        <el-input-number v-model="config.aging" :min="0" :max="100" />
-        <el-switch v-model="config.enableAging" style="margin-top: 8px" />
-      </el-form-item>
-
-      <el-form-item label="字体：">
-        <el-select v-model="config.fontFamily" placeholder="请选择字体">
-          <el-option label="仿宋" value="FangSong" />
-          <el-option label="楷体" value="KaiTi" />
-          <el-option label="宋体" value="SimSun" />
-        </el-select>
-      </el-form-item>
 
       <el-form-item label="字号：">
-        <el-input-number v-model="config.fontSize" :min="8" :max="100" controls-position="right" />
+        <el-input-number v-model="config.fontSize" :min="8" :max="100" />
       </el-form-item>
 
       <el-form-item label="粗细：">
-        <el-radio-group v-model="config.fontWeight">
-          <el-radio label="normal">正常</el-radio>
-          <el-radio label="bold">加粗</el-radio>
-        </el-radio-group>
+        <el-select style="width: 80px;" v-model="config.fontWeight">
+          <el-option label="正常" value="normal"></el-option>
+          <el-option label="加粗" value="bold"></el-option>
+        </el-select>
       </el-form-item>
+      </div>
+
+
+      <el-divider border-style="dotted" />
+
+      <!-- 公司名称配置 -->
+      <div>
+        <el-form-item label="公司名称：">
+          <el-input v-model="config.companyName" placeholder="请输入公司名称" />
+        </el-form-item>
+
+        <el-form-item label="半径">
+          <el-input-number v-model="config.companyRadius" :min="8" :max="100" style="width: 100px;" />
+        </el-form-item>
+
+        <el-form-item label="自定义样式">
+          <el-switch v-model="config.enableCustomCompanyNameStyle" />
+        </el-form-item>
+        <el-form-item label="颜色：">
+          <el-color-picker v-model="config.companyColor" show-alpha  :disabled="!config.enableCustomCompanyNameStyle"/>
+        </el-form-item>
+
+
+
+      </div>
+
+      <div>
+        <el-form-item label="字体">
+          <el-select v-model="config.companyFontFamily"  style="width: 80px;" :disabled="!config.enableCustomCompanyNameStyle">
+            <el-option label="仿宋" value="FangSong" />
+            <el-option label="楷体" value="KaiTi" />
+            <el-option label="宋体" value="SimSun" />
+            <el-option label="黑体" value="SimHei" />
+          </el-select>
+        </el-form-item>
+
+
+        <el-form-item label="字号">
+          <el-input-number v-model="config.companyFontSize" :min="8" :max="100" :disabled="!config.enableCustomCompanyNameStyle" style="width: 100px;" />
+        </el-form-item>
+
+        <el-form-item label="粗细">
+          <el-select style="width: 60px;" v-model="config.companyFontWeight" :disabled="!config.enableCustomCompanyNameStyle">
+            <el-option label="正常" value="normal"></el-option>
+            <el-option label="加粗" value="bold"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="字间距">
+          <el-input v-model="config.companyWordSpace" :disabled="!config.enableCustomCompanyNameStyle" style="width: 60px;"  />
+        </el-form-item>
+      </div>
+
+      <el-divider border-style="dotted" />
+
+      <div>
+        <el-form-item label="章名：">
+          <el-input v-model="config.sealName" />
+        </el-form-item>
+
+
+        <el-form-item label="位置">
+          <el-input-number v-model="config.sealNameStartY" :min="8" :max="100" style="width: 100px;" />
+        </el-form-item>
+
+        <el-form-item label="自定义样式">
+          <el-switch v-model="config.enableCustomSealNameStyle" />
+        </el-form-item>
+
+        <el-form-item label="颜色：">
+          <el-color-picker v-model="config.sealNameColor" show-alpha :disabled="!config.enableCustomSealNameStyle" />
+        </el-form-item>
+
+      </div>
+
+      <div>
+        <el-form-item label="字体">
+          <el-select v-model="config.sealNameFontFamily"  style="width: 80px;" :disabled="!config.enableCustomSealNameStyle">
+            <el-option label="仿宋" value="FangSong" />
+            <el-option label="楷体" value="KaiTi" />
+            <el-option label="宋体" value="SimSun" />
+            <el-option label="黑体" value="SimHei" />
+          </el-select>
+        </el-form-item>
+
+
+        <el-form-item label="字号">
+          <el-input-number v-model="config.sealNameFontSize" :min="8" :max="100" :disabled="!config.enableCustomSealNameStyle" style="width: 100px;" />
+        </el-form-item>
+
+        <el-form-item label="粗细">
+          <el-select style="width: 60px;" v-model="config.sealNameFontWeight" :disabled="!config.enableCustomSealNameStyle">
+            <el-option label="正常" value="normal"></el-option>
+            <el-option label="加粗" value="bold"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="字间距">
+          <el-input v-model="config.sealNameWordSpace" :disabled="!config.enableCustomSealNameStyle" style="width: 60px;"  />
+        </el-form-item>
+      </div>
+
+      <el-divider border-style="dotted" />
+
+      <div>
+        <el-form-item label="中心内容：">
+          <el-input v-model="config.centerText" placeholder="如：★" />
+        </el-form-item>
+      </div>
+
+      <div>
+        <el-form-item label="防伪码：">
+          <el-input v-model="config.verifyCode" placeholder="如：1234567890" />
+        </el-form-item>
+      </div>
+
+      <div>
+        <el-form-item label="外边线宽度：">
+          <el-input-number v-model="config.outerLine" :min="0" :max="10"/>
+        </el-form-item>
+      </div>
+
+      <div>
+        <el-form-item label="内边线宽度：">
+          <el-input-number v-model="config.innerLine" :min="0" :max="10" />
+        </el-form-item>
+      </div>
+
+
+      <div>
+        <el-form-item label="显示边线：">
+          <el-switch v-model="config.showLines" />
+        </el-form-item>
+      </div>
     </el-form>
   </el-card>
 

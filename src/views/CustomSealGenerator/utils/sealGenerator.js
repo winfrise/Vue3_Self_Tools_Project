@@ -20,7 +20,7 @@ function drawArcText(ctx, text, radius, isTop = true, options = {}) {
 
   if (!text) return;
 
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
+  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -98,8 +98,15 @@ function drawStar(ctx, { fontWeight, fontSize, fontFamily, centerText}) {
 
 export function useSealGenerator(config, template, ctx) {
   const {
-    company = 'XX有限公司',
+
+    companyName = 'xxx有限公司',
+    companyRadius = 80,
+    enableCustomCompanyNameStyle = false,
+    
     sealName = '合同专用章',
+    enableCustomSealNameStyle = false,
+    sealNameStartY = 40,
+
     centerText = '★',
     verifyCode = '',
     color = '#e60000',
@@ -165,19 +172,30 @@ export function useSealGenerator(config, template, ctx) {
   drawStar(ctx, {fontWeight, fontSize, fontFamily, centerText});
 
   // === 4. 绘制公司名（上半圆，逆时针）===
-  drawArcText(ctx, company, 92, true, {
-    fontSize: fontSize - 2,
-    fontFamily,
-    fontWeight,
-    color,
+
+  const companyFontFamily = (enableCustomCompanyNameStyle ? config.companyFontFamily : fontFamily) ?? fontFamily
+  const companyFontSize = (enableCustomCompanyNameStyle ? config.companyFontSize : fontSize) ?? fontSize
+  const companyFontWeight = (enableCustomCompanyNameStyle ? config.companyFontWeight : fontWeight) ?? fontWeight
+  const companyColor = (enableCustomCompanyNameStyle ? config.companyColor : color) ?? color ?? color
+
+
+  drawArcText(ctx, companyName, companyRadius, true, {
+    fontSize: companyFontSize,
+    fontFamily: companyFontFamily,
+    fontWeight: companyFontWeight,
+    color: companyColor,
   })
 
-  // === 绘制章名：使用新的 drawText 函数（水平居中，在 ★ 下方）===
-  drawText(ctx, sealName, 0, 40, {
-    fontSize: fontSize + 4,
-    fontFamily,
-    fontWeight,
-    color,
+  // === 绘制章名 ===
+  const sealNameFontFamily = (enableCustomSealNameStyle ? config.sealNameFontFamily : fontFamily) ?? fontFamily
+  const sealNameFontSize = (enableCustomSealNameStyle ? config.sealNameFontSize : fontSize) ?? fontSize
+  const sealNameFontWeight = (enableCustomSealNameStyle ? config.sealNameFontWeight : fontWeight) ?? fontWeight
+  const sealNameColor = (enableCustomSealNameStyle ? config.sealNameColor : color) ?? color ?? color
+  drawText(ctx, sealName, 0, sealNameStartY, {
+    fontSize: sealNameFontSize,
+    fontFamily: sealNameFontFamily,
+    fontWeight: sealNameFontWeight,
+    color: sealNameColor,
   })
 
 
@@ -200,7 +218,7 @@ export function useSealGenerator(config, template, ctx) {
       const mask = createAgingMask(size, aging);
       ctx.save();
       // 关键：用蒙版裁剪当前印章内容
-      ctx.globalCompositeOperation = 'destination-in';
+      ctx.globalCompositeOperation = 'destination-in';   
       ctx.drawImage(mask, (ctx.canvas.width - size) / 2,  (ctx.canvas.height - size )/ 2 , size , size );
       ctx.restore();
     } catch (e) {

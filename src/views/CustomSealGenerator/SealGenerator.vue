@@ -1,6 +1,6 @@
 <!-- components/SealGenerator.vue -->
 <template>
-  <div class="seal-generator">
+  <div class="seal-generator" style="padding: 20px; min-width: 1200px;">
     <!-- 顶部操作栏 -->
     <el-header class="header">
       <el-button type="primary" @click="generateChinese">生成中文印章</el-button>
@@ -29,14 +29,14 @@
       </el-aside>
 
       <!-- 中间：预览 -->
-      <el-col :span="10" style="display: flex; justify-content: center;">
+      <el-main style="flex-basis: 300px;">
         <SealPreview :config="config" :template="currentTemplate" />
-      </el-col>
+      </el-main>
 
       <!-- 右侧：配置表单 -->
-      <el-col :span="9">
+      <el-main style="flex-basis: 700px;">
         <SealConfigForm v-model="config" />
-      </el-col>
+      </el-main>
     </el-row>
   </div>
 </template>
@@ -56,20 +56,36 @@ const templates = {
 }
 
 const config = ref({
-  company: '喜牛牛骑缝印章科技有限公司',
-  sealName: '骑缝专用章',
+  size: 240,
+  color: '#e60000',
+  fontFamily: 'FangSong',
+  fontSize: 20,
+  fontWeight: 'bold',
+  enableAging: true,
+  aging: 50,
+
+ 
+  companyName: '北京小米科技有限公司',
+  companyRadius: '80',
+  enableCustomCompanyNameStyle: true,
+  companyFontFamily: 'FangSong',
+  companyFontSize: 24,
+  conpanyFontWeight: 'normal',
+  companyColor: '',
+
+  sealName: '骑行专用章',
+  sealNameStartY: 40,
+  enableCustomSealNameStyle: true,
+  sealNameFontFamily: 'FangSong',
+  sealNameFontSize: 24,
+  sealNameFontWeight: 'normal',
+  sealNameColor: '',
+
   centerText: '★',
   verifyCode: '1234567890123ZHANG',
   outerLine: 4,
   innerLine: 1,
   showLines: true,
-  color: '#e60000',
-  size: 240,
-  aging: 90,
-  enableAging: true,
-  fontFamily: 'FangSong',
-  fontSize: 20,
-  fontWeight: 'bold',
 })
 
 function handleTemplateSelected(templateKey) {
@@ -92,11 +108,6 @@ function download() {
 </script>
 
 <style scoped>
-.seal-generator {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
 
 .header {
   display: flex;
