@@ -129,7 +129,7 @@
         </el-form-item>
 
         <el-form-item label="半径">
-          <el-input-number v-model="config.verifyCodeRadius" :min="8" :max="100" style="width: 100px;" />
+          <el-input-number v-model="config.verifyCodeRadius" :min="8"  style="width: 100px;" />
         </el-form-item>
 
         <el-form-item label="颜色：">

@@ -62,17 +62,17 @@ const config = ref({
   aging: 50,
 
   companyName: '北京小米科技有限公司',
-  companyRadius: 85,
+  companyRadius: 95,
   companyFontFamily: 'FZFangSong-Z02',
   companyFontSize: 30,
   conpanyFontWeight: 'normal',
   companyColor: '',
-  companyNameLetterSpacing: 0,
+  companyNameLetterSpacing: 5,
 
   sealName: '骑行专用章',
-  sealNameStartY: 40,
+  sealNameStartY: 50,
   sealNameFontFamily: 'FZFangSong-Z02',
-  sealNameFontSize: 24,
+  sealNameFontSize: 25,
   sealNameFontWeight: 'normal',
   sealNameColor: '',
   sealNameLetterSpacing: 0,
@@ -80,12 +80,12 @@ const config = ref({
   centerText: '★',
 
   verifyCode: '1234567890123',
-  verifyCodeRadius: 90,
+  verifyCodeRadius: 100,
   verifyCodeFontFamily: 'FZFangSong-Z02',
   verifyCodeFontSize: 14,
   verifyCodeFontWeight: 'normal',
   verifyCodeColor: '',
-  verifyCodeLetterSpacing: 0,
+  verifyCodeLetterSpacing: -180,
 
 
   enableCircleLine: true,
