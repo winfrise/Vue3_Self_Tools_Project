@@ -76,6 +76,8 @@ const config = ref({
   sealNameFontWeight: 'normal',
   sealNameColor: '',
   sealNameLetterSpacing: 0,
+  sealNameWidthRatio: 1,
+  sealNameHeightRatio: 1,
 
   centerText: '★',
 

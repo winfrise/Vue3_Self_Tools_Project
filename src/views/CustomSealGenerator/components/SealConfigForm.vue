@@ -115,6 +115,18 @@
         </el-form-item>
       </div>
 
+      <div>
+        <el-form-item label="宽度缩放">
+          <el-input-number v-model="config.sealNameWidthRatio" :step="0.01" style="width: 100px;"  />
+        </el-form-item>
+      </div>
+
+      <div>
+        <el-form-item label="高度缩放">
+          <el-input-number v-model="config.sealNameHeightRatio" :step="0.1" style="width: 100px;"  />
+        </el-form-item>
+      </div>
+
       <el-divider border-style="dotted" />
 
       <div>

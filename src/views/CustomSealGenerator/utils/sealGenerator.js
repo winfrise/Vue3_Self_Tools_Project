@@ -24,6 +24,8 @@ export function useSealGenerator(config, template, ctx) {
     sealNameFontWeight,
     sealNameColor,
     sealNameLetterSpacing,
+    sealNameWidthRatio,
+    sealNameHeightRatio,
 
 
     centerText = '★',
@@ -144,6 +146,8 @@ export function useSealGenerator(config, template, ctx) {
     fontWeight: sealNameFontWeight,
     color: sealNameColor,
     letterSpacing: sealNameLetterSpacing,
+    widthRatio: sealNameWidthRatio,
+    heightRatio: sealNameHeightRatio,
   })
 
 

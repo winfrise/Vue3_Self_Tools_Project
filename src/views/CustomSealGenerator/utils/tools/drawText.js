@@ -4,44 +4,56 @@ export function drawText(ctx, text, x, y, options = {}) {
     fontFamily = 'FangSong',
     fontWeight = 'bold',
     color = '#e60000',
-    letterSpacing = 0 // 新增：字符间距（像素）
+    letterSpacing = 0,
+    widthRatio = 1,
+    heightRatio = 1
   } = options;
 
   if (!text) return;
 
+  ctx.save();
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+
+  const chars = Array.from(text);
+  if (chars.length === 0) {
+    ctx.restore();
+    return;
+  }
+
+  // 使用原始字体测量
   const font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
   ctx.font = font;
-  ctx.fillStyle = color;
-  ctx.textBaseline = 'middle';
 
-  const chars = Array.from(text); // 支持 emoji/中文等 Unicode
-  if (chars.length === 0) return;
+  // 计算每个字符的原始宽度
+  const charWidths = chars.map(char => ctx.measureText(char).width);
+  const totalOriginalWidth = charWidths.reduce((a, b) => a + b, 0);
+  const totalVisualWidth = totalOriginalWidth * widthRatio + letterSpacing * (chars.length - 1);
 
-  // 计算总宽度（含 letter-spacing）
-  let totalWidth = 0;
-  const charWidths = [];
+  let currentX = x - totalVisualWidth / 2;
 
-  for (const char of chars) {
-    const width = ctx.measureText(char).width;
-    charWidths.push(width);
-    totalWidth += width;
-  }
-
-  // 添加字符之间的间距：n 个字符有 (n - 1) 个间隔
-  totalWidth += letterSpacing * (chars.length - 1);
-
-  // 起始 x 位置（使整体居中于传入的 x）
-  let currentX = x - totalWidth / 2;
-
-  // 逐字绘制
   for (let i = 0; i < chars.length; i++) {
     const char = chars[i];
-    const width = charWidths[i];
+    const originalWidth = charWidths[i];
+    const scaledWidth = originalWidth * widthRatio;
 
-    // 绘制当前字符（水平居中于 currentX + width/2）
-    ctx.fillText(char, currentX + width / 2, y);
+    // 计算字符中心（视觉坐标）
+    const centerX = currentX + scaledWidth / 2;
 
-    // 移动到下一个字符起始位置
-    currentX += width + letterSpacing;
+    ctx.save();
+    // 先平移到字符中心
+    ctx.translate(centerX, y);
+    // 再缩放（注意：缩放会影响后续 fillText 的坐标）
+    ctx.scale(widthRatio, heightRatio);
+    // 在缩放后的坐标系中，绘制在 (0, 0)，但要抵消缩放对 baseline 的影响
+    ctx.font = font; // 重要：确保字体一致
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(char, 0, 0);
+    ctx.restore();
+
+    currentX += scaledWidth + letterSpacing;
   }
+
+  ctx.restore();
 }
