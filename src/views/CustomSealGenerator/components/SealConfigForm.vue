@@ -54,7 +54,7 @@
 
 
         <el-form-item label="字号">
-          <el-input-number v-model="config.companyFontSize" :min="8" :max="100"  style="width: 100px;" />
+          <el-input-number v-model="config.companyFontSize" :min="8"  style="width: 100px;" />
         </el-form-item>
 
         <el-form-item label="粗细">
@@ -65,7 +65,7 @@
         </el-form-item>
 
         <el-form-item label="字间距">
-          <el-input v-model="config.companyWordSpace"  style="width: 60px;"  />
+          <el-input-number v-model="config.companyNameLetterSpacing"  :step="5"   style="width: 100px;"  />
         </el-form-item>
       </div>
 
@@ -100,7 +100,7 @@
 
 
         <el-form-item label="字号">
-          <el-input-number v-model="config.sealNameFontSize" :min="8" :max="100" style="width: 100px;" />
+          <el-input-number v-model="config.sealNameFontSize" :min="8"  style="width: 100px;" />
         </el-form-item>
 
         <el-form-item label="粗细">
@@ -111,7 +111,7 @@
         </el-form-item>
 
         <el-form-item label="字间距">
-          <el-input v-model="config.sealNameWordSpace" style="width: 60px;"  />
+          <el-input-number v-model="config.sealNameLetterSpacing" :step="1" style="width: 100px;"  />
         </el-form-item>
       </div>
 
@@ -149,7 +149,7 @@
 
 
         <el-form-item label="字号">
-          <el-input-number v-model="config.verifyCodeFontSize" :min="8" :max="100" style="width: 100px;" />
+          <el-input-number v-model="config.verifyCodeFontSize" :min="8"  style="width: 100px;" />
         </el-form-item>
 
         <el-form-item label="粗细">
@@ -160,7 +160,7 @@
         </el-form-item>
 
         <el-form-item label="字间距">
-          <el-input v-model="config.verifyCodeWordSpace" style="width: 60px;"  />
+          <el-input-number v-model="config.verifyCodeLetterSpacing"  :step="10"  style="width: 100px;"  />
         </el-form-item>
       </div>
 

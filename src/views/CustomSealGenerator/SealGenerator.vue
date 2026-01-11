@@ -67,7 +67,7 @@ const config = ref({
   companyFontSize: 30,
   conpanyFontWeight: 'normal',
   companyColor: '',
-  companyWordSpace: 0,
+  companyNameLetterSpacing: 0,
 
   sealName: '骑行专用章',
   sealNameStartY: 40,
@@ -75,7 +75,7 @@ const config = ref({
   sealNameFontSize: 24,
   sealNameFontWeight: 'normal',
   sealNameColor: '',
-  sealNameWordSpace: 0,
+  sealNameLetterSpacing: 0,
 
   centerText: '★',
 
@@ -85,7 +85,7 @@ const config = ref({
   verifyCodeFontSize: 14,
   verifyCodeFontWeight: 'normal',
   verifyCodeColor: '',
-  verifyCodeWordSpace: 0,
+  verifyCodeLetterSpacing: 0,
 
 
   enableCircleLine: true,

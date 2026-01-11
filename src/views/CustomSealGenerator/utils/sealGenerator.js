@@ -1,129 +1,11 @@
 // utils/sealGenerator.js
 import { createAgingMask } from "./createAgingMask";
-/**
- * 沿圆弧绘制文字，并自动居中
- * @param {CanvasRenderingContext2D} ctx
- * @param {string} text
- * @param {number} radius
- * @param {boolean} isTop
- * @param {Object} options
- */
-function drawArcText(ctx, text, radius, isTop = true, options = {}) {
-  const {
-    fontSize = 20,
-    fontFamily = 'FangSong',
-    fontWeight = 'bold',
-    color = '#e60000',
-    // 新增：控制弧长占比（0～1），1 = 全弧，0.8 = 留白20%
-    arcRatio = 0.9
-  } = options;
 
-  if (!text) return;
+import { drawArcText } from './tools/drawArcText'
+import { drawText } from './tools/drawText'
+import { drawStar } from "./tools/drawStar";
+import { drawCircle } from "./tools/drawCircle";
 
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  const chars = text.split('');
-  const totalChars = chars.length;
-  if (totalChars === 0) return;
-
-  // === 关键：动态计算起始角度，实现居中 ===
-
-  // 1. 定义最大可用弧度（避免贴到左右边缘）
-  const maxArcAngle = (4 * Math.PI) / 3; // 240°
-  const usableArc = maxArcAngle * arcRatio; // 实际使用弧长
-
-  // 2. 估算每个字符所需角度（简化：等分）
-  // 更精确做法：测量每个字符宽度，但性能开销大
-  const charAngle = usableArc / totalChars;
-
-  // 3. 计算整个文字块的总跨度
-  const totalSpan = charAngle * (totalChars - 1); // n个字有n-1个间隔
-
-  // 4. 确定弧的“中心角度”
-  const centerAngle = isTop ?  (3 * Math.PI) / 2 : Math.PI / 2; // 上半圆90°, 下半圆270°
-
-  // 5. 起始角度 = 中心角 - 总跨度/2
-  const startAngle = centerAngle - totalSpan / 2;
-
-  // === 开始绘制 ===
-  for (let i = 0; i < totalChars; i++) {
-    const angle = startAngle + i * charAngle;
-
-    // 如果是下半圆，需要镜像处理方向？→ 不需要！因为我们用 centerAngle 控制了位置
-    // 但要注意：下半圆的阅读顺序应为从左到右（顺时针）
-    // 所以我们可能需要反转字符顺序（仅当 isTop=false 时）
-    const charToDraw = isTop ? chars[i] : chars[totalChars - 1 - i];
-
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-
-    ctx.save();
-    ctx.translate(x, y);
-    // ✅ 旋转使字头朝外
-    ctx.rotate(angle + Math.PI / 2);
-    ctx.fillText(charToDraw, 0, 0);
-    ctx.restore();
-  }
-}
-/**
- * ✨ 新增：绘制普通水平居中文字（用于章名）
- * @param {CanvasRenderingContext2D} ctx
- * @param {string} text
- * @param {number} x
- * @param {number} y
- * @param {Object} options { fontSize, fontFamily, fontWeight, color }
- */
-function drawText(ctx, text, x, y, options = {}) {
-  const { fontSize = 20, fontFamily = 'FangSong', fontWeight = 'bold', color = '#e60000' } = options
-  if (!text) return
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`
-  ctx.fillStyle = color
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(text, x, y)
-}
-
-/**
- * 绘制五角星（居中）
- */
-function drawStar(ctx, { fontWeight, fontSize, fontFamily, centerText}) {
-  ctx.font = `${fontWeight} ${fontSize * 2}px "${fontFamily}", sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(centerText, 0, 0)
-}
-
-
-function drawCircle(
-  ctx,
-  x,
-  y,
-  radius,
-  options = {}
-) {
-  const {
-    color = 'transparent',
-    lineWidth = 1,
-  } = options;
-
-  if (radius <= 0) return;
-
-  ctx.save();
-  
-  ctx.lineWidth = lineWidth;
-  
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-
-  ctx.strokeStyle = color;
-  ctx.stroke();
-
-
-  ctx.restore();
-}
 
 export function useSealGenerator(config, template, ctx) {
   const {
@@ -133,6 +15,7 @@ export function useSealGenerator(config, template, ctx) {
     companyFontFamily,
     companyFontWeight,
     companyColor,
+    companyNameLetterSpacing,
     
     sealName = '合同专用章',
     sealNameStartY = 40,
@@ -140,6 +23,8 @@ export function useSealGenerator(config, template, ctx) {
     sealNameFontFamily,
     sealNameFontWeight,
     sealNameColor,
+    sealNameLetterSpacing,
+
 
     centerText = '★',
 
@@ -149,6 +34,7 @@ export function useSealGenerator(config, template, ctx) {
     verifyCodeFontFamily,
     verifyCodeFontWeight,
     verifyCodeColor,
+    verifyCodeLetterSpacing,
 
     color = '#e60000',
     size = 240,
@@ -248,6 +134,7 @@ export function useSealGenerator(config, template, ctx) {
     fontFamily: companyFontFamily || fontFamily,
     fontWeight: companyFontWeight || fontWeight,
     color: companyColor || color,
+    letterSpacing: companyNameLetterSpacing, 
   })
 
   // === 绘制章名 ===
@@ -256,6 +143,7 @@ export function useSealGenerator(config, template, ctx) {
     fontFamily: sealNameFontFamily,
     fontWeight: sealNameFontWeight,
     color: sealNameColor,
+    letterSpacing: sealNameLetterSpacing,
   })
 
 
@@ -266,6 +154,7 @@ export function useSealGenerator(config, template, ctx) {
     fontFamily: verifyCodeFontFamily,
     fontWeight: verifyCodeFontWeight,
     color: verifyCodeColor,
+    letterSpacing: verifyCodeLetterSpacing,
   })
 
   ctx.restore()
