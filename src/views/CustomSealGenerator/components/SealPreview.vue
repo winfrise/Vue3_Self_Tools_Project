@@ -8,6 +8,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useSealGenerator } from '../utils/sealGenerator'
+import { setupHiDPICanvas } from '../utils/tools/setupHiDPICanvas'
 
 const props = defineProps({
   config: Object,
@@ -17,7 +18,8 @@ const props = defineProps({
 const canvas = ref(null)
 
 onMounted(() => {
-  drawSeal()
+  setupHiDPICanvas(canvas.value,400, 400)
+  setTimeout(drawSeal, 800)
 })
 
 watch(() => props.config, () => {

@@ -1,6 +1,7 @@
 // utils/sealGenerator.js
 import { createAgingMask } from "./createAgingMask";
 
+
 import { drawArcText } from './tools/drawArcText'
 import { drawText } from './tools/drawText'
 import { drawStar } from "./tools/drawStar";
@@ -67,12 +68,12 @@ export function useSealGenerator(config, template, ctx) {
     fontWeight = 'bold',
   } = config
 
-
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save()
 
   // 启用抗锯齿
   ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high'; // high | medium | low
 
   drawDebugOptions(ctx, config.debugConfig)
 

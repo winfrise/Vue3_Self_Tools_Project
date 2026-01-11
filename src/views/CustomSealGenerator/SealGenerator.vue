@@ -3,7 +3,6 @@
   <div class="seal-generator" style="padding: 20px; min-width: 1200px;">
     <!-- 顶部操作栏 -->
     <el-header class="header">
-      <el-button type="primary" @click="generateChinese">生成中文印章</el-button>
       <el-button type="success" @click="download">下载印章</el-button>
     </el-header>
 
@@ -75,7 +74,7 @@ const config = ref({
 
   sealName: '骑行专用章',
   sealNameStartY: 50,
-  sealNameFontFamily: 'FZFangSong-Z02',
+  sealNameFontFamily: 'FZShuSong-Z01',
   sealNameFontSize: 25,
   sealNameFontWeight: 'normal',
   sealNameColor: '',
@@ -87,7 +86,7 @@ const config = ref({
 
   verifyCode: '1234567890123',
   verifyCodeRadius: 100,
-  verifyCodeFontFamily: 'FZFangSong-Z02',
+  verifyCodeFontFamily: 'FZShuSong-Z01',
   verifyCodeFontSize: 14,
   verifyCodeFontWeight: 'normal',
   verifyCodeColor: '',
