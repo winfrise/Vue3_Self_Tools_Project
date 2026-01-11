@@ -5,6 +5,7 @@ import { drawArcText } from './tools/drawArcText'
 import { drawText } from './tools/drawText'
 import { drawStar } from "./tools/drawStar";
 import { drawCircle } from "./tools/drawCircle";
+import { drawDebugOptions } from "./tools/drawDebugOptions";
 
 
 export function useSealGenerator(config, template, ctx) {
@@ -66,12 +67,14 @@ export function useSealGenerator(config, template, ctx) {
     fontWeight = 'bold',
   } = config
 
+
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save()
 
   // 启用抗锯齿
   ctx.imageSmoothingEnabled = true;
 
+  drawDebugOptions(ctx, config.debugConfig)
 
   // const centerX = size / 2;
   // const centerY = size / 2;

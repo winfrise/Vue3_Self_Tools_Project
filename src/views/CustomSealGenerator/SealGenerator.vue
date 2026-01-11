@@ -31,6 +31,7 @@
       <!-- 中间：预览 -->
       <el-main style="flex-basis: 300px;">
         <SealPreview :config="config" :template="currentTemplate" />
+        <DebugConfigForm v-model="config.debugConfig" />
       </el-main>
 
       <!-- 右侧：配置表单 -->
@@ -46,6 +47,7 @@ import { ref, reactive, watch } from 'vue'
 import SealTemplate from './components/SealTemplate.vue'
 import SealPreview from './components/SealPreview.vue'
 import SealConfigForm from './components/SealConfigForm.vue'
+import DebugConfigForm from './components/DebugConfigForm.vue'
 
 const currentTemplate = ref('round')
 
@@ -106,7 +108,18 @@ const config = ref({
   innerCircleLineWidth: 1,
   innerCircleLineRadius: 110,
   innerCircleLineColor: '',
+
+  debugConfig: {
+    debugShowCenterPoint: false,    // 显示中心点
+    debugShowCenterLines: false,    // 显示横竖中心线
+    debugShowCircleBaselines: false,// 显示所有圆形参考基线
+    debugShowRadiusLabel: false,    // 显示圆形半径数值标注
+    debugShowSealNameBaseLine: false,//显示章名基准线
+    debugShowSealBorder: false,     // 显示印章整体外框
+    debugShowCoordinateLabel: false,// 显示中心点坐标文字
+}
 })
+
 
 function handleTemplateSelected(templateKey) {
   currentTemplate.value = templateKey
