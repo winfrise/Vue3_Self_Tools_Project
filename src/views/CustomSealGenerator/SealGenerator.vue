@@ -63,7 +63,7 @@ const config = ref({
 
   companyName: '北京小米科技有限公司',
   companyRadius: 85,
-  companyFontFamily: 'FangSong',
+  companyFontFamily: 'FZFangSong-Z02',
   companyFontSize: 30,
   conpanyFontWeight: 'normal',
   companyColor: '',
@@ -71,7 +71,7 @@ const config = ref({
 
   sealName: '骑行专用章',
   sealNameStartY: 40,
-  sealNameFontFamily: 'FangSong',
+  sealNameFontFamily: 'FZFangSong-Z02',
   sealNameFontSize: 24,
   sealNameFontWeight: 'normal',
   sealNameColor: '',
@@ -81,7 +81,7 @@ const config = ref({
 
   verifyCode: '1234567890123',
   verifyCodeRadius: 90,
-  verifyCodeFontFamily: 'FangSong',
+  verifyCodeFontFamily: 'FZFangSong-Z02',
   verifyCodeFontSize: 14,
   verifyCodeFontWeight: 'normal',
   verifyCodeColor: '',

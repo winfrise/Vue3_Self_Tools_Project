@@ -45,10 +45,10 @@
       <div>
         <el-form-item label="字体">
           <el-select v-model="config.companyFontFamily"  style="width: 80px;" >
-            <el-option label="仿宋" value="FangSong" />
-            <el-option label="楷体" value="KaiTi" />
-            <el-option label="宋体" value="SimSun" />
-            <el-option label="黑体" value="SimHei" />
+            <el-option label="仿宋" value="FZFangSong-Z02" />
+            <el-option label="楷体" value="FZKai-Z03" />
+            <el-option label="宋体" value="FZShuSong-Z01" />
+            <el-option label="黑体" value="FZHei-B01" />
           </el-select>
         </el-form-item>
 
@@ -91,10 +91,10 @@
       <div>
         <el-form-item label="字体">
           <el-select v-model="config.sealNameFontFamily"  style="width: 80px;">
-            <el-option label="仿宋" value="FangSong" />
-            <el-option label="楷体" value="KaiTi" />
-            <el-option label="宋体" value="SimSun" />
-            <el-option label="黑体" value="SimHei" />
+            <el-option label="仿宋" value="FZFangSong-Z02" />
+            <el-option label="楷体" value="FZKai-Z03" />
+            <el-option label="宋体" value="FZShuSong-Z01" />
+            <el-option label="黑体" value="FZHei-B01" />
           </el-select>
         </el-form-item>
 
@@ -140,10 +140,10 @@
       <div>
         <el-form-item label="字体">
           <el-select v-model="config.verifyCodeFontFamily"  style="width: 80px;">
-            <el-option label="仿宋" value="FangSong" />
-            <el-option label="楷体" value="KaiTi" />
-            <el-option label="宋体" value="SimSun" />
-            <el-option label="黑体" value="SimHei" />
+            <el-option label="仿宋" value="FZFangSong-Z02" />
+            <el-option label="楷体" value="FZKai-Z03" />
+            <el-option label="宋体" value="FZShuSong-Z01" />
+            <el-option label="黑体" value="FZHei-B01" />
           </el-select>
         </el-form-item>
 
