@@ -138,7 +138,7 @@ export function useSealGenerator(config, template, ctx) {
   // }
 
      // === 3. 绘制五角星 ===
-  drawStar(ctx, {fontWeight, fontSize, fontFamily, centerText});
+  drawStar(ctx, 0, 0, { fillColor: color});
 
   // === 4. 绘制公司名（上半圆，逆时针）==
   drawArcText(ctx, companyName, companyRadius, true, {

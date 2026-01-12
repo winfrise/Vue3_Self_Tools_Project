@@ -1,5 +1,5 @@
-   export function setupHiDPICanvas(canvas, canvasSize, canvasDpr) {
-      const dpr = canvasDpr || window.devicePixelRatio || 1;
+   export function setupHiDPICanvas(canvas, canvasSize, dpr) {
+      dpr = dpr || window.devicePixelRatio || 1;
 
       // 设置 CSS 显示尺寸（用户看到的大小）
       canvas.style.width = canvasSize + 'px';

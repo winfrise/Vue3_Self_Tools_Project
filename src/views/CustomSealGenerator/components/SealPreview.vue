@@ -18,8 +18,7 @@ const props = defineProps({
 const canvas = ref(null)
 
 onMounted(() => {
-  setupHiDPICanvas(canvas.value, props.config.size)
-  setTimeout(drawSeal, 800)
+  drawSeal()
 })
 
 watch(() => props.config, () => {
@@ -27,6 +26,7 @@ watch(() => props.config, () => {
 }, { deep: true })
 
 function drawSeal() {
+    setupHiDPICanvas(canvas.value, props.config.size, props.config.dpr)
   const el = canvas.value
   if (!el) return
 

@@ -20,6 +20,15 @@
           <el-switch v-model="config.enableAging" />
           <el-input-number v-model="config.aging" :disabled="!config.enableAging" :min="0" :max="100" style="margin-left: 10px;" />
         </el-form-item>
+
+        <el-form-item label="分辨率：">
+          <el-select v-model="config.dpr" style="width: 80px;">
+            <el-option label="0.5倍" :value="0.5"></el-option>
+            <el-option label="1倍" :value="1"></el-option>
+            <el-option label="2" :value="2"></el-option>
+            <el-option label="4" :value="4"></el-option>
+          </el-select>
+        </el-form-item>
       </div>
 
       <el-divider border-style="dotted" />

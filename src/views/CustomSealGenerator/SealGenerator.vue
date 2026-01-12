@@ -65,6 +65,7 @@ const templates = {
 const config = ref({
   size: 300,
   color: '#DC143C', // 标准红色
+  dpr: 2, // 分辨率
   enableAging: true,
   aging: 50,
 
@@ -89,6 +90,7 @@ const config = ref({
   sealNameHeightRatio: 1,
 
   centerText: '★',
+  centerTextFontSize: 40,
 
   verifyCode: '1234567890123',
   verifyCodeRadius: 100,
