@@ -38,11 +38,6 @@
           <el-color-picker v-model="config.companyColor" show-alpha  />
         </el-form-item>
 
-
-
-      </div>
-
-      <div>
         <el-form-item label="字体">
           <el-select v-model="config.companyFontFamily"  style="width: 80px;" >
             <el-option label="仿宋" value="FZFangSong-Z02" />
@@ -67,10 +62,7 @@
         <el-form-item label="字间距">
           <el-input-number v-model="config.companyNameLetterSpacing"  :step="5"   style="width: 100px;"  />
         </el-form-item>
-      </div>
 
-
-      <div>
         <el-form-item label="宽度缩放">
           <el-input-number v-model="config.companyNameWidthRatio" :step="0.01" style="width: 100px;"  />
         </el-form-item>
@@ -97,9 +89,7 @@
           <el-color-picker v-model="config.sealNameColor" show-alpha  />
         </el-form-item>
 
-      </div>
 
-      <div>
         <el-form-item label="字体">
           <el-select v-model="config.sealNameFontFamily"  style="width: 80px;">
             <el-option label="仿宋" value="FZFangSong-Z02" />
@@ -124,9 +114,7 @@
         <el-form-item label="字间距">
           <el-input-number v-model="config.sealNameLetterSpacing" :step="1" style="width: 100px;"  />
         </el-form-item>
-      </div>
 
-      <div>
         <el-form-item label="宽度缩放">
           <el-input-number v-model="config.sealNameWidthRatio" :step="0.01" style="width: 100px;"  />
         </el-form-item>
@@ -156,9 +144,7 @@
         <el-form-item label="颜色：">
           <el-color-picker v-model="config.verifyCodeColor" show-alpha  />
         </el-form-item>
-      </div>
 
-      <div>
         <el-form-item label="字体">
           <el-select v-model="config.verifyCodeFontFamily"  style="width: 80px;">
             <el-option label="仿宋" value="FZFangSong-Z02" />
@@ -167,7 +153,6 @@
             <el-option label="黑体" value="FZHei-B01" />
           </el-select>
         </el-form-item>
-
 
         <el-form-item label="字号">
           <el-input-number v-model="config.verifyCodeFontSize" :min="8"  style="width: 100px;" />
@@ -187,7 +172,6 @@
 
       <el-divider border-style="dotted" />
 
-
       <div>
         <el-form-item label="显示边线：">
           <el-switch v-model="config.enableCircleLine" />
@@ -206,6 +190,8 @@
         </el-form-item>
       </div>
 
+      <el-divider border-style="dotted" />
+      
       <div>
         <el-form-item label="显示内边线：">
           <el-switch v-model="config.enableInnerCircleLine" />
@@ -223,6 +209,8 @@
           <el-color-picker v-model="config.innerCircleLineColor" show-alpha :disabled="!config.enableInnerCircleLine"  />
         </el-form-item>
       </div>
+
+      <el-divider border-style="dotted" />
 
       <div>
         <el-form-item label="显示外边线：">

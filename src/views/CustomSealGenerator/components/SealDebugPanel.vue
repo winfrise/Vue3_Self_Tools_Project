@@ -14,45 +14,67 @@
       </div>
 
       <!-- 所有调试项开关 -->
-      <el-space direction="vertical" size="8" fill>
-        <el-switch
-          v-model="debugForm.debugShowCenterPoint"
-          active-text="显示中心点(红色圆点+坐标)"
-          inactive-text="隐藏中心点"
-        />
-        <el-switch
-          v-model="debugForm.debugShowCenterLines"
-          active-text="显示横竖中心线(贯穿画布)"
-          inactive-text="隐藏中心线"
-        />
-        <el-switch
-          v-model="debugForm.debugShowCircleBaselines"
-          active-text="显示圆形参考基线(所有半径虚线)"
-          inactive-text="隐藏圆形参考线"
-        />
-        <el-switch
-          v-model="debugForm.debugShowRadiusLabel"
-          active-text="显示半径数值标注(r=xxx)"
-          inactive-text="隐藏半径标注"
-          :disabled="!debugForm.debugShowCircleBaselines"
-        />
-        <el-switch
-          v-model="debugForm.debugShowSealNameBaseLine"
-          active-text="显示章名基准线(横向虚线)"
-          inactive-text="隐藏章名基线"
-        />
-        <el-switch
-          v-model="debugForm.debugShowSealBorder"
-          active-text="显示印章外框边界(红色矩形)"
-          inactive-text="隐藏印章外框"
-        />
-        <el-switch
-          v-model="debugForm.debugShowCoordinateLabel"
-          active-text="显示中心点坐标文本"
-          inactive-text="隐藏坐标文本"
-          :disabled="!debugForm.debugShowCenterPoint"
-        />
-      </el-space>
+      <el-form>
+        <el-form-item label="中心点">
+          <el-switch
+            v-model="debugForm.debugShowCenterPoint"
+          />
+          <el-divider direction="vertical" />
+          <span class="tips">红色圆点+坐标</span>
+        </el-form-item>
+
+        
+        <el-form-item label="中心线">
+          <el-switch
+            v-model="debugForm.debugShowCenterLines"
+          />
+
+          <el-divider direction="vertical" />
+          <span class="tips">显示横竖中心线(贯穿画布)</span>
+        </el-form-item>
+
+        <el-form-item label="圆形参考基线">
+          <el-switch
+            v-model="debugForm.debugShowCircleBaselines"
+          />
+          <el-divider direction="vertical" />
+          <div class="tips">所有半径虚线</div>
+
+        </el-form-item>
+
+        <el-form-item label="半径数值标注">
+          <el-switch
+            v-model="debugForm.debugShowRadiusLabel"
+            :disabled="!debugForm.debugShowCircleBaselines"
+          />
+          <el-divider direction="vertical" />
+          <div class="tips">r=xxx</div>
+        </el-form-item>
+
+        
+        <el-form-item label="章名基线">
+          <el-switch
+            v-model="debugForm.debugShowSealNameBaseLine"
+          />
+          <el-divider direction="vertical" />
+          <div class="tips">横向虚线</div>
+        </el-form-item>
+
+        <el-form-item label="印章外框边界">
+          <el-switch
+            v-model="debugForm.debugShowSealBorder"
+          />
+          <el-divider direction="vertical" />
+          <div class="tips">红色矩形</div>
+        </el-form-item>
+
+        <el-form-item label="中心点坐标文本">
+          <el-switch
+            v-model="debugForm.debugShowCoordinateLabel"
+            :disabled="!debugForm.debugShowCenterPoint"
+          />
+        </el-form-item>
+      </el-form>
     </el-card>
   </div>
 </template>
@@ -147,5 +169,8 @@ const handleAllClose = () => {
 }
 :deep(.el-switch__label) {
   font-size: 13px !important;
+}
+:deep(.el-form-item) {
+  margin-bottom: 5px!important;
 }
 </style>

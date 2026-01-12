@@ -12,7 +12,7 @@ export function drawArcText(ctx, text, radius, isTop = true, options = {}) {
 
   if (!text) return;
 
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
+  ctx.font = `${fontWeight} ${fontSize}px 等线, "${fontFamily}"`;
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

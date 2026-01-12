@@ -18,7 +18,7 @@ const props = defineProps({
 const canvas = ref(null)
 
 onMounted(() => {
-  setupHiDPICanvas(canvas.value,400, 400)
+  setupHiDPICanvas(canvas.value, props.config.size)
   setTimeout(drawSeal, 800)
 })
 

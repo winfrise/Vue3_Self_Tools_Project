@@ -10,7 +10,18 @@ import { drawDebugOptions } from "./tools/drawDebugOptions";
 
 
 export function useSealGenerator(config, template, ctx) {
+  
+
   const {
+    color = '#e60000',
+    size = 300,
+
+    enableAging = false,
+    aging = 90,
+    fontFamily = 'FangSong',
+    fontSize = 20,
+    fontWeight = 'bold',
+
     companyName = 'xxx有限公司',
     companyRadius = 80,
     companyFontSize,
@@ -42,9 +53,6 @@ export function useSealGenerator(config, template, ctx) {
     verifyCodeColor,
     verifyCodeLetterSpacing,
 
-    color = '#e60000',
-    size = 240,
-
     enableCircleLine = true,
     circleLineWidth,
     circleLineColor,
@@ -59,28 +67,24 @@ export function useSealGenerator(config, template, ctx) {
     outerCircleLineWidth,
     outerCircleLineColor,
     outerCircleLineRadius,
-
-
-    enableAging = false,
-    aging = 90,
-    fontFamily = 'FangSong',
-    fontSize = 20,
-    fontWeight = 'bold',
   } = config
 
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.clearRect(0, 0, size, size)
   ctx.save()
 
   // 启用抗锯齿
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // high | medium | low
 
-  drawDebugOptions(ctx, config.debugConfig)
+  ctx.lineCap = 'round'; // 线条端点圆润
+  ctx.lineJoin = 'round'; // 线条拐角圆润
+
+  drawDebugOptions(ctx, {...config.debugConfig , size})
 
   // const centerX = size / 2;
   // const centerY = size / 2;
-  const centerX = ctx.canvas.width / 2
-  const centerY = ctx.canvas.height / 2
+  const centerX = size / 2
+  const centerY = size / 2
   const outerRadius = size * 0.45; // 外圈半径
   const innerRadius = size * 0.25; // 内圈半径
 
@@ -178,7 +182,7 @@ export function useSealGenerator(config, template, ctx) {
       ctx.save();
       // 关键：用蒙版裁剪当前印章内容
       ctx.globalCompositeOperation = 'destination-in';   
-      ctx.drawImage(mask, (ctx.canvas.width - size) / 2,  (ctx.canvas.height - size )/ 2 , size , size );
+      ctx.drawImage(mask, 0,  0 , size , size );
       ctx.restore();
     } catch (e) {
       console.warn('做旧效果应用失败:', e);

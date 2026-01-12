@@ -1,6 +1,7 @@
 export function drawDebugOptions (ctx, debugConfig = {}) {
   // 解构所有独立调试开关 + 默认值 (所有开关默认false，需要哪个开哪个)
   const {
+    size,
     debugShowCenterPoint = false,    // 显示中心点
     debugShowCenterLines = false,    // 显示横竖中心线
     debugShowCircleBaselines = false,// 显示所有圆形参考基线
@@ -24,8 +25,8 @@ export function drawDebugOptions (ctx, debugConfig = {}) {
   }
 
   // 画布基础常量
-  const canvasW = ctx.canvas.width;
-  const canvasH = ctx.canvas.height;
+  const canvasW = size;
+  const canvasH = size;
   const centerX = canvasW / 2;
   const centerY = canvasH / 2;
   const sealSize = debugConfig.size || 240;
