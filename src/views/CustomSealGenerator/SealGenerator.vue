@@ -32,18 +32,27 @@
       <!-- 中间主列 -->
       <el-aside width="300px" style="padding: 0;">
         <el-scrollbar>
-          <SealPreview :config="config" :external-image-config="externalImageConfig" :template="currentTemplate" />
+          <SealPreview 
+            :config="config" 
+            :external-image-config="externalImageConfig" 
+            :template="currentTemplate"
+            :agingEffects="agingEffects"
+          />
           <SealImagePanel v-model="externalImageConfig" />
           <SealDebugPanel v-model="config.debugConfig" />
         </el-scrollbar>
       </el-aside>
 
       <!-- 右侧列 -->
-      <el-main style="padding: 0;">
+      <el-aside width="500px" style="padding: 0;">
         <el-scrollbar>
           <SealConfigForm v-model="config" />
         </el-scrollbar>
-      </el-main>
+      </el-aside>
+
+      <el-aside width="400px">
+        <AgingEffectManager v-model="agingEffects" />
+      </el-aside>
     </el-container>
   </el-container>
 </template>
@@ -55,6 +64,7 @@ import SealPreview from './components/SealPreview.vue'
 import SealConfigForm from './components/SealConfigForm.vue'
 import SealDebugPanel from './components/SealDebugPanel.vue'
 import SealImagePanel from './components/SealImagePanel.vue'
+import AgingEffectManager from './components/AgingEffectManager.vue'
 
 const currentTemplate = ref('round')
 
@@ -68,7 +78,7 @@ const config = ref({
   size: 300,
   color: '#DC143C', // 标准红色
   dpr: 2, // 分辨率
-  enableAging: true,
+  enableAging: false,
   aging: 50,
 
   companyName: '北京小米科技有限公司',
@@ -121,9 +131,11 @@ const config = ref({
   debugConfig: {
     debugShowCenterPoint: false,    // 显示中心点
     debugShowCenterLines: false,    // 显示横竖中心线
-  }
+  },
+  effectList: []
 })
 
+// 背景配置
 const externalImageConfig = ref({
     enable: true,
     size: 300,
@@ -135,8 +147,9 @@ const externalImageConfig = ref({
     scale: 1,
 })
 
-// 切换模板
+const agingEffects = ref([])
 
+// 切换模板
 function handleTemplateSelected(templateKey) {
   currentTemplate.value = templateKey
 }

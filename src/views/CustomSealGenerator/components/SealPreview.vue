@@ -11,11 +11,13 @@ import { ref, watch, onMounted } from 'vue'
 import { useSealGenerator } from '../utils/sealGenerator'
 import { setupHiDPICanvas } from '../utils/tools/setupHiDPICanvas'
 import { useDrawExternalImage } from '../utils/drawExternalImage'
+import { useSealArgingEffect } from '../utils/sealAgingEffects'
 
 const props = defineProps({
   config: Object,
   externalImageConfig: Object,
   template: String,
+  agingEffects: Array,
 })
 
 const sealCanvasRef = ref(null)
@@ -29,6 +31,10 @@ watch(() => props.config, () => {
   drawSeal()
 }, { deep: true })
 
+watch(() => props.agingEffects, () => {
+  drawSeal()
+}, {deep: true})
+
 function drawSeal() {
   setupHiDPICanvas(sealCanvasRef.value, props.config.size, props.config.dpr)
   const el = sealCanvasRef.value
@@ -39,6 +45,8 @@ function drawSeal() {
 
   ctx.clearRect(0, 0, el.width, el.height)
   useSealGenerator(props.config, props.template, ctx)
+
+  useSealArgingEffect(ctx, props.agingEffects, {dpr: props.config.dpr})
 }
 
 const externalImageCanvasRef = ref()
@@ -57,6 +65,7 @@ function drawExternalImage () {
   // useSealGenerator(props.config, props.template, ctx)
   useDrawExternalImage(ctx, props.externalImageConfig)
 }
+
 </script>
 
 <style scoped>

@@ -8,7 +8,12 @@
 
       <div>
         <el-form-item label="印章颜色：">
-          <el-color-picker v-model="config.color" show-alpha />
+          <el-color-picker v-model="config.color" show-alpha 
+            :predefine="[
+              '#DC143C',
+              '#A03030'
+            ]" 
+          />
         </el-form-item>
 
 
