@@ -32,7 +32,8 @@
       <!-- 中间主列 -->
       <el-aside width="300px" style="padding: 0;">
         <el-scrollbar>
-          <SealPreview :config="config" :template="currentTemplate" />
+          <SealPreview :config="config" :external-image-config="externalImageConfig" :template="currentTemplate" />
+          <SealImagePanel v-model="externalImageConfig" />
           <SealDebugPanel v-model="config.debugConfig" />
         </el-scrollbar>
       </el-aside>
@@ -53,6 +54,7 @@ import SealTemplate from './components/SealTemplate.vue'
 import SealPreview from './components/SealPreview.vue'
 import SealConfigForm from './components/SealConfigForm.vue'
 import SealDebugPanel from './components/SealDebugPanel.vue'
+import SealImagePanel from './components/SealImagePanel.vue'
 
 const currentTemplate = ref('round')
 
@@ -124,7 +126,17 @@ const config = ref({
     debugShowSealNameBaseLine: false,//显示章名基准线
     debugShowSealBorder: false,     // 显示印章整体外框
     debugShowCoordinateLabel: false,// 显示中心点坐标文字
-}
+  }
+})
+
+const externalImageConfig = ref({
+    enable: true,
+    imageUrl: '',
+    offsetX: 0,
+    offsetY: 0,
+    width: 0, 
+    height: 0,
+    scale: 1,
 })
 
 // 切换模板

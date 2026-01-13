@@ -67,6 +67,8 @@ export function useSealGenerator(config, template, ctx) {
     outerCircleLineWidth,
     outerCircleLineColor,
     outerCircleLineRadius,
+    
+    externalImageConfig,
   } = config
 
   ctx.clearRect(0, 0, size, size)
@@ -79,7 +81,7 @@ export function useSealGenerator(config, template, ctx) {
   ctx.lineCap = 'round'; // 线条端点圆润
   ctx.lineJoin = 'round'; // 线条拐角圆润
 
-  drawDebugOptions(ctx, {...config.debugConfig , size})
+
 
   // const centerX = size / 2;
   // const centerY = size / 2;
@@ -95,6 +97,9 @@ export function useSealGenerator(config, template, ctx) {
   // 设置全局颜色
   ctx.strokeStyle = color
   ctx.fillStyle = color
+
+  // 绘制调试线
+  drawDebugOptions(ctx, {...config.debugConfig , size})
 
 
   // === 应用轻微随机旋转（模拟手盖）===
