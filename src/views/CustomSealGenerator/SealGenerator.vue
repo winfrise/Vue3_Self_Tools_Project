@@ -121,11 +121,6 @@ const config = ref({
   debugConfig: {
     debugShowCenterPoint: false,    // 显示中心点
     debugShowCenterLines: false,    // 显示横竖中心线
-    debugShowCircleBaselines: false,// 显示所有圆形参考基线
-    debugShowRadiusLabel: false,    // 显示圆形半径数值标注
-    debugShowSealNameBaseLine: false,//显示章名基准线
-    debugShowSealBorder: false,     // 显示印章整体外框
-    debugShowCoordinateLabel: false,// 显示中心点坐标文字
   }
 })
 

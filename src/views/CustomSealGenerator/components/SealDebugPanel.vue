@@ -33,47 +33,7 @@
           <span class="tips">显示横竖中心线(贯穿画布)</span>
         </el-form-item>
 
-        <el-form-item label="圆形参考基线">
-          <el-switch
-            v-model="debugForm.debugShowCircleBaselines"
-          />
-          <el-divider direction="vertical" />
-          <div class="tips">所有半径虚线</div>
-
-        </el-form-item>
-
-        <el-form-item label="半径数值标注">
-          <el-switch
-            v-model="debugForm.debugShowRadiusLabel"
-            :disabled="!debugForm.debugShowCircleBaselines"
-          />
-          <el-divider direction="vertical" />
-          <div class="tips">r=xxx</div>
-        </el-form-item>
-
         
-        <el-form-item label="章名基线">
-          <el-switch
-            v-model="debugForm.debugShowSealNameBaseLine"
-          />
-          <el-divider direction="vertical" />
-          <div class="tips">横向虚线</div>
-        </el-form-item>
-
-        <el-form-item label="印章外框边界">
-          <el-switch
-            v-model="debugForm.debugShowSealBorder"
-          />
-          <el-divider direction="vertical" />
-          <div class="tips">红色矩形</div>
-        </el-form-item>
-
-        <el-form-item label="中心点坐标文本">
-          <el-switch
-            v-model="debugForm.debugShowCoordinateLabel"
-            :disabled="!debugForm.debugShowCenterPoint"
-          />
-        </el-form-item>
       </el-form>
     </el-card>
   </div>
@@ -90,11 +50,6 @@ const props = defineProps({
     default: () => ({
       debugShowCenterPoint: false,
       debugShowCenterLines: false,
-      debugShowCircleBaselines: false,
-      debugShowRadiusLabel: false,
-      debugShowSealNameBaseLine: false,
-      debugShowSealBorder: false,
-      debugShowCoordinateLabel: false
     })
   }
 })
@@ -126,11 +81,6 @@ watch(
 const handleAllOpen = () => {
   debugForm.debugShowCenterPoint = true
   debugForm.debugShowCenterLines = true
-  debugForm.debugShowCircleBaselines = true
-  debugForm.debugShowRadiusLabel = true
-  debugForm.debugShowSealNameBaseLine = true
-  debugForm.debugShowSealBorder = true
-  debugForm.debugShowCoordinateLabel = true
   ElMessage.success('所有调试项已开启')
 }
 
@@ -138,11 +88,6 @@ const handleAllOpen = () => {
 const handleAllClose = () => {
   debugForm.debugShowCenterPoint = false
   debugForm.debugShowCenterLines = false
-  debugForm.debugShowCircleBaselines = false
-  debugForm.debugShowRadiusLabel = false
-  debugForm.debugShowSealNameBaseLine = false
-  debugForm.debugShowSealBorder = false
-  debugForm.debugShowCoordinateLabel = false
   ElMessage.success('所有调试项已关闭')
 }
 </script>
