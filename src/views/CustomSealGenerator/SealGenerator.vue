@@ -131,6 +131,7 @@ const config = ref({
 
 const externalImageConfig = ref({
     enable: true,
+    size: 300,
     imageUrl: '',
     offsetX: 0,
     offsetY: 0,

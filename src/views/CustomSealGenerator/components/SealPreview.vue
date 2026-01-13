@@ -54,8 +54,6 @@ function drawExternalImage () {
 
   const ctx = el.getContext('2d')
   if (!ctx) return
-
-  ctx.clearRect(0, 0, el.width, el.height)
   // useSealGenerator(props.config, props.template, ctx)
   useDrawExternalImage(ctx, props.externalImageConfig)
 }

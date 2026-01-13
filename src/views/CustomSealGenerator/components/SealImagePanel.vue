@@ -27,13 +27,13 @@
     <div class="controls">
       <el-form size="small">
         <el-form-item label="X轴偏移:">
-          <el-slider v-model="config.x" show-input="" />
+          <el-input-number v-model="config.offsetX" />
         </el-form-item>
         <el-form-item label="Y轴偏移:">
-          <el-slider v-model="config.y" show-input="" />
+          <el-input-number v-model="config.offsetY"  />
         </el-form-item>
         <el-form-item label="缩放比例:">
-          <el-slider v-model="config.scale" :step="0.01" show-input="" />
+          <el-input-number v-model="config.scale" :step="0.01"  />
         </el-form-item>
       </el-form>
     </div>
