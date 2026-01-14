@@ -1,6 +1,7 @@
 import { applyGhosting } from './applyGhostingEffect'
 import { applyInkInconsistent} from './applyInkInconsistent'
 import { applyPressureVariation } from './applyPressureVariation'
+import { applyEdgeWear } from './applyEdgeWear'
 
 export function useSealArgingEffect (ctx, effectList, options = {}) {
 
@@ -45,7 +46,7 @@ export function useSealArgingEffect (ctx, effectList, options = {}) {
 
     switch (type) {
       case 'edgeWear':
-        applyEdgeWear(ctx, w, h, params.intensity, params.density || 1)
+        applyEdgeWear(ctx, params)
         break
       case 'inkInconsistent':
         applyInkInconsistent(ctx, params)
@@ -79,22 +80,7 @@ export function useSealArgingEffect (ctx, effectList, options = {}) {
 }
 
 // ========== 各种老化效果实现 ==========
-function applyEdgeWear(cctx, offscreen, w, h, intensity) {
-  const centerX = w / 2
-  const centerY = h / 2
-  const radius = 90
-  const points = Math.floor(300 * intensity)
-  for (let i = 0; i < points; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const r = radius - Math.random() * 8 * intensity
-    const x = centerX + Math.cos(angle) * r
-    const y = centerY + Math.sin(angle) * r
-    ctx.fillStyle = '#fff'
-    ctx.beginPath()
-    ctx.arc(x, y, 1.5 + intensity * 2, 0, Math.PI * 2)
-    ctx.fill()
-  }
-}
+
 
 
 
