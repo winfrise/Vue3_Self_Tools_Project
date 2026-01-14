@@ -1,3 +1,5 @@
+// 受力不均匀
+
 export function applyPressureVariation (ctx, options) {
     const { colors } = options
     const canvas = ctx.canvas
@@ -17,4 +19,5 @@ export function applyPressureVariation (ctx, options) {
     ctx.fillRect(0,0,canvas.width, canvas.height);
     // 恢复状态
     ctx.restore();
+    ctx.globalCompositeOperation = 'source-over'
 }
