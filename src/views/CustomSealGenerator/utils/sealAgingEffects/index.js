@@ -1,5 +1,7 @@
 import { applyGhosting } from './applyGhostingEffect'
 import { applyInkInconsistent} from './applyInkInconsistent'
+import { applyPressureVariation } from './applyPressureVariation'
+
 export function useSealArgingEffect (ctx, effectList, options = {}) {
 
     const { dpr } = options
@@ -60,8 +62,11 @@ export function useSealArgingEffect (ctx, effectList, options = {}) {
       case 'discoloration':
         applyDiscoloration(ctx, w, h, params.intensity)
         break
-      case 'ghosting':
+      case 'ghosting': // 重影效果
         applyGhosting(ctx, offscreen,  params)
+        break
+      case 'pressureVariation': 
+        applyPressureVariation(ctx, params)
         break
       case 'dryStamp':
         applyDryStamp(ctx, w, h, params.intensity)

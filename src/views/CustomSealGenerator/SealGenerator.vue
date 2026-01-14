@@ -8,7 +8,7 @@
     </el-header>
 
     <!-- 主体：三列 -->
-    <el-container>
+    <el-container style="height: 600px;">
       <!-- 左侧列 -->
       <el-aside width="140px" style="padding: 0;">
         <el-scrollbar>

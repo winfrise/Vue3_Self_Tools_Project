@@ -1,15 +1,14 @@
 <template>
-  <div class="aging-effect-manager">
+  <el-card>
     <h2>印章老化效果管理器（10种差异化参数）</h2>
 
     <!-- 预览区域 -->
     <div class="preview-container">
       <canvas ref="canvasRef" width="400" height="400"></canvas>
-      <p>实时预览（模拟叠加效果）</p>
     </div>
 
     <!-- 效果类型选择 + 添加按钮 -->
-    <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: end;">
+    <div >
       <el-select v-model="selectedType" placeholder="请选择要添加的老化效果" style="width: 220px">
         <el-option
           v-for="opt in effectOptions"
@@ -31,7 +30,7 @@
         :name="index.toString()"
         :title="`效果 ${index + 1} - ${getTypeLabel(effect.type)}`"
       >
-        <el-form label-width="120px" size="small">
+        <el-form size="small">
           <el-form-item label="效果类型">
             <el-input :model-value="getTypeLabel(effect.type)" readonly />
           </el-form-item>
@@ -76,18 +75,81 @@
             </el-form-item>
           </template>
 
+          <!-- 重影 -->
           <template v-else-if="effect.type === 'ghosting'">
             <el-form-item label="x轴偏移">
-              <el-slider v-model="effect.params.offsetX" :min="-30" :max="30" :step="1" @change="renderPreview" />
+              <el-slider v-model="effect.params.offsetX" :min="-30" :max="30" :step="1" show-input @change="renderPreview" />
             </el-form-item>
 
             <el-form-item label="Y轴偏移">
-              <el-slider v-model="effect.params.offsetY" :min="-30" :max="30" :step="1" @change="renderPreview" />
+              <el-slider v-model="effect.params.offsetY" :min="-30" :max="30" :step="1" show-input @change="renderPreview" />
             </el-form-item>
 
             <el-form-item label="透明度">
               <el-slider v-model="effect.params.alpha" :min="0" :max="1" :step="0.1" show-input @change="renderPreview" />
             </el-form-item>
+          </template>
+
+          <!-- 受力不均 -->
+          <template v-else-if="effect.type === 'pressureVariation'">
+            <el-form inline>
+              <el-form-item label="颜色">
+                <el-color-picker v-model="effect.params.colors[0][1]" show-alpha 
+                  :predefine="[
+                    '#DC143C',
+                    '#A03030'
+                  ]" 
+                />
+              </el-form-item>
+
+              <el-form-item label="位置1">
+                <el-input-number v-model="effect.params.colors[0][0]" :min="0" :max="effect.params.colors[1][0]" :step="0.1" @change="renderPreview" />
+              </el-form-item>
+
+
+              <el-form-item label="颜色">
+                <el-color-picker v-model="effect.params.colors[1][1]" show-alpha 
+                  :predefine="[
+                    '#DC143C',
+                    '#A03030'
+                  ]" 
+                />
+              </el-form-item>
+
+              <el-form-item label="位置2">
+                <el-input-number v-model="effect.params.colors[1][0]" :min="effect.params.colors[0][0]" :max="effect.params.colors[2][0]" :step="0.1" @change="renderPreview" />
+              </el-form-item>
+
+              <el-form-item label="颜色">
+                <el-color-picker v-model="effect.params.colors[2][1]" show-alpha 
+                  :predefine="[
+                    '#DC143C',
+                    '#A03030'
+                  ]" 
+                />
+              </el-form-item>
+
+              <el-form-item label="位置3">
+                <el-input-number v-model="effect.params.colors[2][0]" :min="effect.params.colors[1][0]" :max="effect.params.colors[3][0]" :step="0.1" show-input @change="renderPreview" />
+              </el-form-item>
+
+              <el-form-item label="颜色">
+                <el-color-picker v-model="effect.params.colors[3][1]" show-alpha 
+                  :predefine="[
+                    '#DC143C',
+                    '#A03030'
+                  ]" 
+                />
+              </el-form-item>
+
+              <el-form-item label="位置4">
+                <el-input-number v-model="effect.params.colors[3][0]" :min="effect.params.colors[2][0]" :max="1" :step="0.1" show-input @change="renderPreview" />
+              </el-form-item>
+
+
+            </el-form>
+            
+
           </template>
 
           <!-- 其他效果：通用强度 -->
@@ -107,11 +169,12 @@
         </el-form>
       </el-collapse-item>
     </el-collapse>
-  </div>
+  </el-card>
 </template>
 
 <script setup>
 import { ref,reactive, watch, onMounted, nextTick, computed } from 'vue'
+import { applyPressureVariation } from '../utils/sealAgingEffects/applyPressureVariation'
 
 const props = defineProps({
   modelValue: Array,
@@ -133,6 +196,7 @@ const effectOptions = [
   { label: '局部缺失', value: 'partialLoss' },
   { label: '污渍与晕染', value: 'smudge' },
   { label: '微移重影（实现）', value: 'ghosting' },
+  { label: '受力不均（实现）', value: 'pressureVariation'},
   { label: '背景噪点', value: 'backgroundNoise' },
   { label: '印泥干涸', value: 'dryStamp' },
   { label: '虫蛀或磕碰痕迹', value: 'physicalDamage' }
@@ -157,9 +221,17 @@ const canvasRef = ref(null)
 const getDefaultParams = (type) => {
   const defaultParamsMap = {
     ghosting: { // 重影
-      offsetX: 5,
-      offsetY: 5,
-      alpha: 0.5
+      offsetX: 2,
+      offsetY: 1,
+      alpha: 0.8,
+    },
+    pressureVariation: {
+      colors: [
+        [ 0, "rgba(250, 149, 170, 1)" ], 
+        [ 0.2, "rgba(184, 15, 48, 1)" ], 
+        [ 0.8, "rgba(234, 31, 72, 1)" ], 
+        [ 1, "rgba(220, 20, 60, 1)" ] 
+      ]
     }
   }
   const defaultParams = defaultParamsMap[type]
@@ -288,6 +360,9 @@ const renderPreview = () => {
         break
       case 'ghosting':
         applyGhosting(ctx, offscreen, w, h, params)
+        break
+      case 'pressureVariation':
+        applyPressureVariation(ctx, params)
         break
       case 'dryStamp':
         applyDryStamp(ctx, w, h, params.intensity)
@@ -431,11 +506,6 @@ function applyBackgroundNoise(ctx, w, h, intensity) {
 </script>
 
 <style scoped>
-.aging-effect-manager {
-  padding: 20px;
-  margin: 0 auto;
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-}
 
 .preview-container {
   text-align: center;
