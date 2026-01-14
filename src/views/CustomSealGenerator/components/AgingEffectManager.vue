@@ -132,7 +132,7 @@ const effectOptions = [
   { label: '印面龟裂', value: 'cracking' },
   { label: '局部缺失', value: 'partialLoss' },
   { label: '污渍与晕染', value: 'smudge' },
-  { label: '微移重影', value: 'ghosting' },
+  { label: '微移重影（实现）', value: 'ghosting' },
   { label: '背景噪点', value: 'backgroundNoise' },
   { label: '印泥干涸', value: 'dryStamp' },
   { label: '虫蛀或磕碰痕迹', value: 'physicalDamage' }

@@ -85,7 +85,7 @@ const config = ref({
   companyRadius: 95,
   companyFontFamily: 'FZFangSong-Z02',
   companyFontSize: 30,
-  conpanyFontWeight: 'normal',
+  companyFontWeight: 'normal',
   companyColor: '',
   companyNameLetterSpacing: 5,
   companyNameWidthRatio: 1,
@@ -114,7 +114,7 @@ const config = ref({
 
 
   enableCircleLine: true,
-  circleLineWidth: 4,
+  circleLineWidth: 8,
   circleLineRadius: 125,
   circleLineColor: '',
 

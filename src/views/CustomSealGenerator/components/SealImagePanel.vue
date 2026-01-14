@@ -23,14 +23,16 @@
 
     </el-upload>
 
+    {{ config.offsetX }}
+
     <!-- 控制面板 -->
     <div class="controls">
       <el-form size="small">
         <el-form-item label="X轴偏移:">
-          <el-input-number v-model="config.offsetX" />
+          <el-input-number v-model="config.offsetX" :min="-30" :style="0.1" :max="30" />
         </el-form-item>
         <el-form-item label="Y轴偏移:">
-          <el-input-number v-model="config.offsetY"  />
+          <el-input-number v-model="config.offsetY"  :min="-30" :style="0.1" :max="30" />
         </el-form-item>
         <el-form-item label="缩放比例:">
           <el-input-number v-model="config.scale" :step="0.01"  />
