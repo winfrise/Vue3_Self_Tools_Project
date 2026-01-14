@@ -82,14 +82,14 @@ const config = ref({
   aging: 50,
 
   companyName: '北京小米科技有限公司',
-  companyRadius: 95,
-  companyFontFamily: 'FZFangSong-Z02',
+  companyRadius: 90,
+  companyFontFamily: 'FZShuSong-Z01',
   companyFontSize: 30,
   companyFontWeight: 'normal',
   companyColor: '',
   companyNameLetterSpacing: 5,
   companyNameWidthRatio: 1,
-  companyNameHeightRatio: 1,
+  companyNameHeightRatio: 1.5,
 
   sealName: '骑行专用章',
   sealNameStartY: 50,

@@ -54,10 +54,14 @@
 
         <el-form-item label="字体">
           <el-select v-model="config.companyFontFamily"  style="width: 80px;" >
-            <el-option label="仿宋" value="FZFangSong-Z02" />
-            <el-option label="楷体" value="FZKai-Z03" />
-            <el-option label="宋体" value="FZShuSong-Z01" />
-            <el-option label="黑体" value="FZHei-B01" />
+            <el-option label="华文宋体(宋体)" value="Songti SC" />
+            <el-option label="华广黑体(雅黑)" value="Heiti SC" />
+            <el-option label="方正仿宋" value="FZFangSong-Z02" />
+            <el-option label="方正楷体" value="FZKai-Z03" />
+            <el-option label="方正宋体" value="FZShuSong-Z01" />
+            <el-option label="方正黑体" value="FZHei-B01" />
+            <el-option label="思源黑体" value="Source Han Sans CN" />
+            <el-option label="思源宋体" value="Source Han Serif SC" />
           </el-select>
         </el-form-item>
 
@@ -68,8 +72,10 @@
 
         <el-form-item label="粗细">
           <el-select style="width: 60px;" v-model="config.companyFontWeight" >
-            <el-option label="正常" value="normal"></el-option>
-            <el-option label="加粗" value="bold"></el-option>
+            <el-option label="300" value="300"></el-option>
+            <el-option label="500" value="500"></el-option>
+            <el-option label="700" value="700"></el-option>
+            <el-option label="900" value="900"></el-option>
           </el-select>
         </el-form-item>
 
