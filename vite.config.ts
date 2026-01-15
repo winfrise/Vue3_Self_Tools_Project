@@ -12,10 +12,9 @@ import ServerUrlCopy from 'vite-plugin-url-copy'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-import'
 import UnoCSS from 'unocss/vite'
-import unoConfig from './config/uno.config.js'
+
 import { visualizer } from 'rollup-plugin-visualizer'
 
-import eslintPlugin from 'vite-plugin-eslint'
 
 // 按需引入 Element Plus 的核心插件
 import AutoImport from 'unplugin-auto-import/vite'
@@ -54,14 +53,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             }
           }
       }
-      }),
-      eslintPlugin({
-        // 👇 显式指定 ESLint 配置文件路径
-        lintOnStart: true,
-        failOnError: false,
-        cache: false,
-        // 关键：指定配置文件位置
-        overrideConfigFile: resolve(__dirname, './config/eslint.config.mjs')
       }),
       // 自动导入 Element Plus 相关 API（如 ElMessage、ElMessageBox 等）
       AutoImport({
@@ -129,7 +120,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       ViteEjsPlugin({
         title: env.VITE_APP_TITLE
       }),
-      UnoCSS(unoConfig),
+      UnoCSS(),
     ],
 
     css: {
