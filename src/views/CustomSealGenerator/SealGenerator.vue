@@ -30,24 +30,22 @@
       </el-aside>
 
       <!-- 中间主列 -->
-      <el-aside width="300px" style="padding: 0;">
-        <el-scrollbar>
-          <SealPreview 
+      <el-aside width="302px" style="padding: 0;">
+          <SealPreview style="position: sticky; top: 0; z-index: 10;"
             :config="config" 
             :external-image-config="externalImageConfig" 
             :template="currentTemplate"
             :agingEffects="agingEffects"
           />
-          <SealImagePanel v-model="externalImageConfig" />
-          <SealDebugPanel v-model="config.debugConfig" />
-        </el-scrollbar>
+          <el-scrollbar style="height: calc(100% - 302px)">
+              <SealImagePanel v-model="externalImageConfig" />
+              <SealDebugPanel v-model="config.debugConfig" />
+          </el-scrollbar>
       </el-aside>
 
       <!-- 右侧列 -->
       <el-aside width="500px" style="padding: 0;">
-        <el-scrollbar>
           <SealConfigForm v-model="config" />
-        </el-scrollbar>
       </el-aside>
 
       <el-aside width="400px">

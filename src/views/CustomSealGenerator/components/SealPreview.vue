@@ -1,9 +1,9 @@
 <!-- components/SealPreview.vue -->
 <template>
-  <div class="preview-container">
+  <el-card>
     <canvas ref="externalImageCanvasRef" width="300" height="300" class="external-image-canvas"></canvas>
     <canvas ref="sealCanvasRef" width="300" height="300" class="seal-canvas"></canvas>
-  </div>
+  </el-card>
 </template>
 
 <script setup>
@@ -69,25 +69,18 @@ function drawExternalImage () {
 </script>
 
 <style scoped>
-.preview-container {
-  position: relative;
-  width: 300px;
-  height: 300px;
-  border: 1px dashed #ccc;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-}
-.external-image-canvas {
+  ::v-deep(.el-card__body) {
+    padding: 0;
+  }
+ .external-image-canvas {
   position: absolute;
   top: 0;
-  left: 0
+  left: 0;
+  display: block;
 }
 .seal-canvas {
   position: relative;
   z-index: 10;
+  display: block;
 }
 </style>

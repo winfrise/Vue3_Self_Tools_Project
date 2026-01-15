@@ -23,8 +23,6 @@
 
     </el-upload>
 
-    {{ config.offsetX }}
-
     <!-- 控制面板 -->
     <div class="controls">
       <el-form size="small">
