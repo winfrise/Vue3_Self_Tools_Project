@@ -4,9 +4,11 @@
     class="zoom-container"
     @wheel.prevent="handleWheel"
     @mousedown="handleMouseDown"
+    @mouseover="handleMouseOver"
+    @mousemove="handleMouseMove"
+    @mouseout="handleMouseOut"
   >
     <div
-      ref="contentRef"
       class="zoom-content"
       :style="{
         transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
@@ -16,11 +18,17 @@
       <!-- 你的内容放在这里 -->
       <slot />
     </div>
+
+    <!-- 放大镜效果 -->
+    <teleport to="body">
+      <!-- 放大镜 -->
+      <div class="magnifier" v-if="magnifierVisible" :style="{left: magnifierPosition.left + 'px', top: magnifierPosition.top + 'px'}"><canvas ref="magnifierCanvasRef"></canvas></div>
+    </teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 
 // 状态
 const scale = ref(1)
@@ -29,7 +37,6 @@ const translateY = ref(0)
 
 // refs
 const containerRef = ref<HTMLDivElement | null>(null)
-const contentRef = ref<HTMLDivElement | null>(null)
 
 // 鼠标拖拽相关
 let isDragging = false
@@ -41,8 +48,14 @@ const ZOOM_FACTOR = 0.1
 const MIN_SCALE = 0.2
 const MAX_SCALE = 5
 
+const magnifierPosition = reactive({
+  left: 0,
+  top: 0,
+})
+
+
 function handleWheel(e: WheelEvent) {
-  if (!containerRef.value || !contentRef.value) return
+  if (!containerRef.value) return
 
   const containerRect = containerRef.value.getBoundingClientRect()
   // 获取鼠标相对于容器的位置（作为缩放中心）
@@ -96,6 +109,22 @@ function handleMouseDown(e: MouseEvent) {
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
 }
+
+
+const magnifierCanvasRef = ref(null)
+const magnifierVisible = ref(false)
+
+const handleMouseOver = (mouseEvnet: MouseEvent) => {
+  magnifierVisible.value = true
+}
+const handleMouseMove = (moveEvent: MouseEvent) => {
+      // 更新放大镜位置
+    magnifierPosition.left = moveEvent.clientX
+    magnifierPosition.top = moveEvent.clientY
+}
+const handleMouseOut = (mouseEvnet: MouseEvent) => {
+  magnifierVisible.value = false
+}
 </script>
 
 <style scoped>
@@ -121,5 +150,19 @@ function handleMouseDown(e: MouseEvent) {
   width: 100%;
   height: 100%;
   background: green;
+}
+
+/* 放大镜效果 */
+.magnifier {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+  background: red;
 }
 </style>
