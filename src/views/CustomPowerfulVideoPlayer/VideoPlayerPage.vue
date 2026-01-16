@@ -1,34 +1,15 @@
 <template>
   <div class="player-wrapper">
-    <h2>视频播放器 - 可拖拽蒙版（无放大）</h2>
+    <h2>高级视频播放器 - 全屏优化版</h2>
 
-    <div class="top-controls">
-      <input type="file" id="localVideoInput" accept="video/*" style="display:none;" />
-      <button id="loadLocalVideoBtn">📁 加载本地视频</button>
-
-      <input type="text" id="urlInput" placeholder="输入网络视频地址（.m3u8 或 .mp4）"
-             value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />
-      <button id="loadUrlBtn">🔗 加载网络视频</button>
-
-      <button id="resetView">重置视图</button>
-
-      <button id="toggleMaskMode">开启绘制蒙版</button>
-      <select id="maskShapeSelect">
-        <option value="rect">长方形</option>
-        <option value="square">正方形</option>
-        <option value="circle">圆形</option>
-      </select>
-      <label>蒙版颜色: <input type="color" id="maskColor" value="#000000" /></label>
-      <label>透明度: <input type="range" id="maskOpacity" min="0" max="1" step="0.05" value="0.7" /></label>
-      <button id="clearMask">清除蒙版</button>
-    </div>
-
+    <!-- 全屏目标容器 -->
     <div class="player-fullscreen-target" id="fullscreenTarget">
       <div class="video-container" id="container">
-        <video id="video" muted></video>
-        <canvas id="maskCanvas"></canvas>
+        <video id="video"></video>
+        <div id="selection"></div>
       </div>
 
+      <!-- 自定义控制条 -->
       <div class="custom-controls">
         <div class="progress-row" id="progressContainer">
           <div class="progress-bar" id="progressBar"></div>
@@ -63,33 +44,60 @@
       </div>
     </div>
 
+    <!-- 放大镜 -->
+    <div id="magnifier"><canvas></canvas></div>
+
+    <!-- 顶部控制 -->
+    <div class="top-controls">
+      <input type="text" id="urlInput" placeholder="输入视频地址（支持 .m3u8 或 .mp4）"
+             value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />
+      <button id="loadBtn">加载视频</button>
+      <button id="zoomIn">+</button>
+      <button id="zoomOut">−</button>
+      <span id="zoomLevel">100%</span>
+      <button id="resetView">重置视图</button>
+    </div>
     <p class="hint">
-      操作说明：<br>
-      • 开启绘制 → 拖拽创建蒙版区域<br>
-      • 创建后可拖拽整个蒙版移动位置<br>
-      • 蒙版区域显示原始比例的视频内容（无放大）<br>
-      • 全局缩放（无蒙版时）以鼠标位置为中心
+      操作提示：<br>
+      • 滚轮：缩放｜直接拖动：平移｜Shift+拖动：裁剪<br>
+      • 鼠标悬停视频：显示放大镜
     </p>
+
+    <div class="preview-container" id="previewContainer">
+      <h3>区域裁剪预览</h3>
+      <canvas id="cropPreview"></canvas>
+    </div>
   </div>
+
+
 </template>
 
   <script setup>
-import { onMounted } from 'vue';
-import Hls from 'hls.js'
-
-    // ========== DOM ==========
-   onMounted(() => {
-     const video = document.getElementById('video');
+  import { onMounted } from 'vue';
+    import Hls from 'hls.js';
+  onMounted(() => {
+        // ========== DOM ==========
+    const video = document.getElementById('video');
     const container = document.getElementById('container');
-    const maskCanvas = document.getElementById('maskCanvas');
-    const maskCtx = maskCanvas.getContext('2d');
-
-    const localVideoInput = document.getElementById('localVideoInput');
-    const loadLocalVideoBtn = document.getElementById('loadLocalVideoBtn');
+    const fullscreenTarget = document.getElementById('fullscreenTarget');
     const urlInput = document.getElementById('urlInput');
-    const loadUrlBtn = document.getElementById('loadUrlBtn');
+    const loadBtn = document.getElementById('loadBtn');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
     const resetBtn = document.getElementById('resetView');
+    const zoomLevelEl = document.getElementById('zoomLevel');
+    const magnifier = document.getElementById('magnifier');
+    const magnifierCanvas = magnifier.querySelector('canvas');
+    const selection = document.getElementById('selection');
+    const cropPreview = document.getElementById('cropPreview');
+    const previewContainer = document.getElementById('previewContainer');
+
+    // 控制条
     const playPauseBtn = document.getElementById('playPause');
+    const toStartBtn = document.getElementById('toStart');
+    const rewindBtn = document.getElementById('rewind');
+    const forwardBtn = document.getElementById('forward');
+    const toEndBtn = document.getElementById('toEnd');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const timeDisplay = document.getElementById('timeDisplay');
@@ -97,23 +105,28 @@ import Hls from 'hls.js'
     const volumeLevel = document.getElementById('volumeLevel');
     const speedSelect = document.getElementById('speedSelect');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const toggleMaskModeBtn = document.getElementById('toggleMaskMode');
-    const maskShapeSelect = document.getElementById('maskShapeSelect');
-    const maskColorInput = document.getElementById('maskColor');
-    const maskOpacityInput = document.getElementById('maskOpacity');
-    const clearMaskBtn = document.getElementById('clearMask');
 
     // ========== 状态 ==========
     let scale = 1;
-    let translateX = 0, translateY = 0;
-    const minScale = 0.1, maxScale = 10;
+    let translateX = 0;
+    let translateY = 0;
+    const minScale = 0.1;
+    const maxScale = 10;
 
-    let isMaskMode = false;
-    let mask = null; // { type, x/y/w/h 或 cx/cy/radius }
-    let isDrawing = false;
-    let drawStart = { x: 0, y: 0 };
-    let isDraggingMask = false;
-    let dragOffset = { x: 0, y: 0 };
+    let isPanning = false;
+    let isSelecting = false;
+    let isMovingSelection = false;
+    let startPanX = 0, startPanY = 0;
+    let selectStart = { x: 0, y: 0 };
+    let cropRect = null;
+
+    const magSize = 150;
+    const halfMag = magSize / 2;
+    const magCtx = magnifierCanvas.getContext('2d');
+    magnifierCanvas.width = magSize;
+    magnifierCanvas.height = magSize;
+
+    let needsPreviewUpdate = false;
 
     // ========== 工具函数 ==========
     function formatTime(seconds) {
@@ -123,17 +136,10 @@ import Hls from 'hls.js'
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function getVideoRect() {
-      const rect = container.getBoundingClientRect();
-      const videoW = video.videoWidth * scale;
-      const videoH = video.videoHeight * scale;
-      const left = (rect.width - videoW) / 2 + translateX;
-      const top = (rect.height - videoH) / 2 + translateY;
-      return { left, top, width: videoW, height: videoH };
-    }
-
     function updateTransform() {
-      video.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      video.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+      zoomLevelEl.textContent = `${Math.round(scale * 100)}%`;
+      if (cropRect) needsPreviewUpdate = true;
     }
 
     function resetView() {
@@ -141,237 +147,152 @@ import Hls from 'hls.js'
       translateX = 0;
       translateY = 0;
       updateTransform();
+      hideSelection();
     }
 
     function loadVideo(src) {
       resetView();
-      if (Hls.isSupported() && typeof src === 'string' && src.endsWith('.m3u8')) {
+      if (Hls.isSupported() && src.endsWith('.m3u8')) {
         if (video.hls) video.hls.destroy();
         const hls = new Hls();
         video.hls = hls;
         hls.loadSource(src);
         hls.attachMedia(video);
+      } else if (video.canPlayType('application/vnd.apple.mpegurl') && src.endsWith('.m3u8')) {
+        video.src = src;
       } else {
         video.src = src;
       }
-      video.load();
     }
 
-    // ========== 渲染蒙版（无放大）==========
-    function renderMask() {
-      const rect = container.getBoundingClientRect();
-      maskCanvas.width = rect.width;
-      maskCanvas.height = rect.height;
-
-      const ctx = maskCtx;
-      ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-
-      if (!mask) return;
-
-      // 背景遮罩
-      const colorHex = maskColorInput.value;
-      const opacity = parseFloat(maskOpacityInput.value);
-      const r = parseInt(colorHex.slice(1, 3), 16);
-      const g = parseInt(colorHex.slice(3, 5), 16);
-      const b = parseInt(colorHex.slice(5, 7), 16);
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-      ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-
-      ctx.save();
-
-      // 剪裁蒙版区域
-      if (mask.type === 'circle') {
-        ctx.beginPath();
-        ctx.arc(mask.cx, mask.cy, mask.radius, 0, Math.PI * 2);
-        ctx.clip();
-        // 绘制圆形区域（使用外接正方形）
-        const x = mask.cx - mask.radius;
-        const y = mask.cy - mask.radius;
-        const size = mask.radius * 2;
-        drawVideoRegion(ctx, x, y, size);
-      } else {
-        ctx.rect(mask.x, mask.y, mask.width, mask.height);
-        ctx.clip();
-        drawVideoRegion(ctx, mask.x, mask.y, mask.width, mask.height);
-      }
-
-      ctx.restore();
-    }
-
-    // 在指定区域绘制 1:1 视频内容（无缩放）
-    function drawVideoRegion(ctx, dstX, dstY, dstW, dstH = dstW) {
-      const videoRect = getVideoRect();
-      const srcX = (dstX - videoRect.left) / scale;
-      const srcY = (dstY - videoRect.top) / scale;
-      const srcW = dstW / scale;
-      const srcH = dstH / scale;
-      ctx.drawImage(video, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
-    }
-
-    function clearMask() {
-      mask = null;
-      renderMask();
-    }
-
-    // ========== 判断点是否在蒙版内 ==========
-    function isPointInMask(x, y) {
-      if (!mask) return false;
-      if (mask.type === 'circle') {
-        const dx = x - mask.cx;
-        const dy = y - mask.cy;
-        return dx * dx + dy * dy <= mask.radius * mask.radius;
-      } else {
-        return x >= mask.x && x <= mask.x + mask.width &&
-               y >= mask.y && y <= mask.y + mask.height;
-      }
-    }
-
-    // ========== 事件绑定 ==========
-    loadLocalVideoBtn.addEventListener('click', () => {
-      localVideoInput.click();
+    // ========== 缩放 ==========
+    zoomInBtn.addEventListener('click', () => {
+      scale = Math.min(maxScale, scale + 0.2);
+      updateTransform();
     });
 
-    localVideoInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        loadVideo(url);
-      }
-    });
-
-    loadUrlBtn.addEventListener('click', () => {
-      const url = urlInput.value.trim();
-      if (url) loadVideo(url);
+    zoomOutBtn.addEventListener('click', () => {
+      scale = Math.max(minScale, scale - 0.2);
+      updateTransform();
     });
 
     resetBtn.addEventListener('click', resetView);
 
-    // ========== 全局缩放（以鼠标为中心）==========
     container.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const rect = container.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      // ✂️ 不再处理蒙版区域的滚轮（无 zoom 功能）
-
-      // 全局缩放
-      const oldScale = scale;
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       scale = Math.min(maxScale, Math.max(minScale, scale + delta));
-
-      const factor = scale / oldScale;
-      translateX = mouseX - (mouseX - translateX) * factor;
-      translateY = mouseY - (mouseY - translateY) * factor;
-
       updateTransform();
     }, { passive: false });
 
-    // ========== 绘制 & 拖拽蒙版 ==========
-    container.addEventListener('mousedown', (e) => {
+    // ========== 裁剪 ==========
+    function hideSelection() {
+      selection.style.display = 'none';
+      previewContainer.style.display = 'none';
+      cropRect = null;
+    }
+
+    function updateCropFromSelection() {
       const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const selLeft = parseFloat(selection.style.left);
+      const selTop = parseFloat(selection.style.top);
+      const selWidth = parseFloat(selection.style.width);
+      const selHeight = parseFloat(selection.style.height);
 
-      if (isMaskMode && !mask) {
-        isDrawing = true;
-        drawStart = { x, y };
-      } else if (mask && isPointInMask(x, y)) {
-        isDraggingMask = true;
-        if (mask.type === 'circle') {
-          dragOffset.x = x - mask.cx;
-          dragOffset.y = y - mask.cy;
-        } else {
-          dragOffset.x = x - mask.x;
-          dragOffset.y = y - mask.y;
-        }
+      if (selWidth <= 0 || selHeight <= 0) return;
+
+      const videoRatio = video.videoWidth / video.videoHeight;
+      const containerRatio = rect.width / rect.height;
+      let drawWidth, drawHeight, offsetX, offsetY;
+
+      if (containerRatio > videoRatio) {
+        drawHeight = rect.height;
+        drawWidth = video.videoWidth * (drawHeight / video.videoHeight);
+        offsetX = (rect.width - drawWidth) / 2;
+        offsetY = 0;
+      } else {
+        drawWidth = rect.width;
+        drawHeight = video.videoHeight * (drawWidth / video.videoWidth);
+        offsetX = 0;
+        offsetY = (rect.height - drawHeight) / 2;
       }
-    });
 
-    container.addEventListener('mousemove', (e) => {
-      const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const cropX = ((selLeft - offsetX) / drawWidth) * video.videoWidth;
+      const cropY = ((selTop - offsetY) / drawHeight) * video.videoHeight;
+      const cropW = (selWidth / drawWidth) * video.videoWidth;
+      const cropH = (selHeight / drawHeight) * video.videoHeight;
 
-      if (isDrawing && isMaskMode) {
-        const shape = maskShapeSelect.value;
-        if (shape === 'circle') {
-          const dx = x - drawStart.x;
-          const dy = y - drawStart.y;
-          const radius = Math.sqrt(dx * dx + dy * dy);
-          mask = {
-            type: 'circle',
-            cx: drawStart.x,
-            cy: drawStart.y,
-            radius: radius
-          };
-        } else {
-          let w = Math.abs(x - drawStart.x);
-          let h = Math.abs(y - drawStart.y);
-          if (shape === 'square') {
-            const size = Math.max(w, h);
-            w = h = size;
-          }
-          const x0 = x < drawStart.x ? x : drawStart.x;
-          const y0 = y < drawStart.y ? y : drawStart.y;
-          mask = {
-            type: 'rect',
-            x: x0,
-            y: y0,
-            width: w,
-            height: h
-          };
-        }
-        renderMask();
-      } else if (isDraggingMask && mask) {
-        if (mask.type === 'circle') {
-          mask.cx = x - dragOffset.x;
-          mask.cy = y - dragOffset.y;
-        } else {
-          mask.x = x - dragOffset.x;
-          mask.y = y - dragOffset.y;
-        }
-        renderMask();
-      }
-    });
+      cropRect = { x: cropX, y: cropY, width: cropW, height: cropH };
+      needsPreviewUpdate = true;
+    }
 
-    window.addEventListener('mouseup', () => {
-      isDrawing = false;
-      isDraggingMask = false;
-    });
+    function updateCropPreview() {
+      if (!cropRect) return;
+      const { x, y, width, height } = cropRect;
+      const aspect = width / height;
+      let pw = 300, ph = 180;
+      if (aspect > pw / ph) ph = pw / aspect;
+      else pw = ph * aspect;
+      cropPreview.width = pw;
+      cropPreview.height = ph;
+      const ctx = cropPreview.getContext('2d');
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, pw, ph);
+      ctx.drawImage(video, x, y, width, height, 0, 0, pw, ph);
+      needsPreviewUpdate = false;
+    }
 
-    // ========== 控制按钮 ==========
-    toggleMaskModeBtn.addEventListener('click', () => {
-      isMaskMode = !isMaskMode;
-      toggleMaskModeBtn.textContent = isMaskMode ? '退出绘制' : '开启绘制蒙版';
-      if (!isMaskMode) isDrawing = false;
-    });
-
-    clearMaskBtn.addEventListener('click', clearMask);
-    [maskColorInput, maskOpacityInput].forEach(el => {
-      el.addEventListener('input', renderMask);
-    });
-
-    // ========== 视频控制 ==========
+    // ========== 控制条逻辑 ==========
     video.addEventListener('loadedmetadata', () => {
       timeDisplay.textContent = `00:00 / ${formatTime(video.duration)}`;
     });
+
     video.addEventListener('timeupdate', () => {
       const percent = (video.currentTime / (video.duration || 1)) * 100;
       progressBar.style.width = `${percent}%`;
       timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-      if (mask) renderMask(); // 实时更新蒙版内容
     });
+
     playPauseBtn.addEventListener('click', () => {
-      if (video.paused) { video.play(); playPauseBtn.textContent = '⏸'; }
-      else { video.pause(); playPauseBtn.textContent = '▶'; }
+      if (video.paused) {
+        video.play();
+        playPauseBtn.textContent = '⏸';
+      } else {
+        video.pause();
+        playPauseBtn.textContent = '▶';
+      }
     });
+
+    video.addEventListener('play', () => playPauseBtn.textContent = '⏸');
+    video.addEventListener('pause', () => playPauseBtn.textContent = '▶');
+
     progressContainer.addEventListener('click', (e) => {
       const rect = progressContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const ratio = Math.max(0, Math.min(1, clickX / rect.width));
       video.currentTime = ratio * (video.duration || 0);
     });
+
+    rewindBtn.addEventListener('click', () => {
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    });
+
+    forwardBtn.addEventListener('click', () => {
+      video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
+    });
+
+    toStartBtn.addEventListener('click', () => {
+      video.currentTime = 0;
+    });
+
+    toEndBtn.addEventListener('click', () => {
+      if (video.duration) video.currentTime = video.duration;
+    });
+
+    // 音量
+    video.volume = 0.8;
+    volumeLevel.style.width = '80%';
+
     volumeSlider.addEventListener('click', (e) => {
       const rect = volumeSlider.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -379,98 +300,283 @@ import Hls from 'hls.js'
       video.volume = vol;
       volumeLevel.style.width = `${vol * 100}%`;
     });
+
+    // 播放速度
     speedSelect.addEventListener('change', () => {
       video.playbackRate = parseFloat(speedSelect.value);
     });
 
-    // ========== 全屏 ==========
-    const fullscreenTarget = document.getElementById('fullscreenTarget');
+    // ✅ 全屏逻辑（关键修复）
     function toggleFullscreen() {
-      if (!document.fullscreenElement) fullscreenTarget.requestFullscreen();
-      else document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        if (fullscreenTarget.requestFullscreen) {
+          fullscreenTarget.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
     }
+
     fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // 监听全屏状态变化（可靠方式）
     document.addEventListener('fullscreenchange', () => {
-      fullscreenBtn.textContent = document.fullscreenElement ? '退出全屏' : '全屏';
-      setTimeout(renderMask, 100);
+      if (document.fullscreenElement === fullscreenTarget) {
+        fullscreenBtn.textContent = '退出全屏';
+        fullscreenTarget.classList.add('fullscreen');
+      } else {
+        fullscreenBtn.textContent = '全屏';
+        fullscreenTarget.classList.remove('fullscreen');
+      }
     });
 
+    // ========== 鼠标交互 ==========
+    container.addEventListener('mousedown', (e) => {
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      if (selection.style.display !== 'none') {
+        const selRect = selection.getBoundingClientRect();
+        if (e.clientX >= selRect.left && e.clientX <= selRect.right &&
+            e.clientY >= selRect.top && e.clientY <= selRect.bottom) {
+          isMovingSelection = true;
+          startPanX = e.clientX - parseFloat(selection.style.left);
+          startPanY = e.clientY - parseFloat(selection.style.top);
+          e.preventDefault();
+          return;
+        }
+      }
+
+      if (e.shiftKey) {
+        selectStart.x = mouseX;
+        selectStart.y = mouseY;
+        isSelecting = true;
+        selection.style.display = 'block';
+        selection.style.left = mouseX + 'px';
+        selection.style.top = mouseY + 'px';
+        selection.style.width = '0px';
+        selection.style.height = '0px';
+        e.preventDefault();
+        return;
+      }
+
+      isPanning = true;
+      startPanX = e.clientX - translateX;
+      startPanY = e.clientY - translateY;
+      container.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+
+      if (isMovingSelection) {
+        selection.style.left = (e.clientX - startPanX) + 'px';
+        selection.style.top = (e.clientY - startPanY) + 'px';
+        updateCropFromSelection();
+        return;
+      }
+
+      if (isSelecting) {
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const left = Math.min(selectStart.x, mouseX);
+        const top = Math.min(selectStart.y, mouseY);
+        const width = Math.abs(mouseX - selectStart.x);
+        const height = Math.abs(mouseY - selectStart.y);
+        selection.style.left = left + 'px';
+        selection.style.top = top + 'px';
+        selection.style.width = width + 'px';
+        selection.style.height = height + 'px';
+        return;
+      }
+
+      if (isPanning) {
+        translateX = e.clientX - startPanX;
+        translateY = e.clientY - startPanY;
+        updateTransform();
+        return;
+      }
+
+      // 放大镜
+      if (video.videoWidth) {
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const videoRatio = video.videoWidth / video.videoHeight;
+        const containerRatio = rect.width / rect.height;
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (containerRatio > videoRatio) {
+          drawHeight = rect.height;
+          drawWidth = video.videoWidth * (drawHeight / video.videoHeight);
+          offsetX = (rect.width - drawWidth) / 2;
+          offsetY = 0;
+        } else {
+          drawWidth = rect.width;
+          drawHeight = video.videoHeight * (drawWidth / video.videoWidth);
+          offsetX = 0;
+          offsetY = (rect.height - drawHeight) / 2;
+        }
+
+        const videoX = ((mouseX - offsetX) / drawWidth) * video.videoWidth;
+        const videoY = ((mouseY - offsetY) / drawHeight) * video.videoHeight;
+
+        magCtx.clearRect(0, 0, magSize, magSize);
+        magCtx.save();
+        magCtx.beginPath();
+        magCtx.arc(halfMag, halfMag, halfMag, 0, Math.PI * 2);
+        magCtx.clip();
+        magCtx.drawImage(video, 
+          videoX - halfMag, 
+          videoY - halfMag, 
+          magSize, 
+          magSize, 
+          0, 0, magSize, magSize
+        );
+        magCtx.restore();
+
+        let posX = e.clientX + 1;
+        let posY = e.clientY + 1;
+
+        if (posX + magSize > window.innerWidth) {
+          posX = e.clientX - magSize - 1;
+        }
+        if (posY + magSize > window.innerHeight) {
+          posY = e.clientY - magSize - 1;
+        }
+        if (posX < 0) posX = 1;
+        if (posY < 0) posY = 1;
+
+        magnifier.style.left = posX + 'px';
+        magnifier.style.top = posY + 'px';
+        magnifier.style.display = 'block';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isPanning) {
+        isPanning = false;
+        container.style.cursor = 'move';
+      }
+      if (isSelecting) {
+        isSelecting = false;
+        const w = parseFloat(selection.style.width);
+        const h = parseFloat(selection.style.height);
+        if (w < 10 || h < 10) {
+          hideSelection();
+        } else {
+          updateCropFromSelection();
+          previewContainer.style.display = 'block';
+        }
+      }
+      isMovingSelection = false;
+    });
+
+    container.addEventListener('mouseleave', () => {
+      magnifier.style.display = 'none';
+    });
+
+    // ========== 渲染循环 ==========
+    function renderLoop() {
+      if (needsPreviewUpdate) {
+        updateCropPreview();
+      }
+      requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
+
     // ========== 初始化 ==========
-    window.addEventListener('load', () => loadVideo(urlInput.value.trim()));
-    window.addEventListener('resize', renderMask);
-   })
+    loadBtn.addEventListener('click', () => {
+      loadVideo(urlInput.value.trim());
+    });
+
+    window.addEventListener('load', () => {
+      loadVideo(urlInput.value.trim());
+    });
+  })
   </script>
 
-
-
   <style scoped>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0; padding: 0; background: #f5f5f5;
-    }
     .player-wrapper {
       max-width: 960px;
       margin: 0 auto;
-      padding: 20px;
     }
-    .top-controls {
-      position: sticky;
-      top: 0;
-      background: #f5f5f5;
-      padding: 12px 0;
-      margin-bottom: 16px;
-      z-index: 1000;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      border-bottom: 1px solid #ddd;
-    }
+
+    /* 全屏目标容器 */
     .player-fullscreen-target {
       position: relative;
       border: 1px solid #ccc;
       background: #000;
-      width: 100%;
-      height: 500px;
-      --controls-height: 70px;
+      --controls-height: 70px; /* 控制条总高度 */
     }
+
     .video-container {
       position: relative;
       width: 100%;
-      height: 100%;
+      height: 500px;
       overflow: hidden;
       background: #000;
+      cursor: move;
     }
+
     #video {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      transform-origin: 0 0;
-      display: block;
+      transform-origin: center center;
+      transition: none;
     }
-    #maskCanvas {
+
+    /* 放大镜 */
+    #magnifier {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(0,0,0,0.6);
       pointer-events: none;
-      z-index: 10;
+      display: none;
+      z-index: 1000;
+      overflow: hidden;
     }
+
+    #selection {
+      position: absolute;
+      border: 2px dashed red;
+      background: rgba(255, 0, 0, 0.1);
+      display: none;
+      z-index: 90;
+      cursor: move;
+    }
+
+    /* 自定义控制条 */
     .custom-controls {
       position: relative;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0, 0, 0, 0.85);
       color: white;
       padding: 8px 12px;
+      pointer-events: none;
     }
+
+    .custom-controls > * {
+      pointer-events: auto;
+    }
+
+    /* 第1行：进度条 */
     .progress-row {
       width: 100%;
       height: 6px;
       background: #444;
       border-radius: 3px;
       cursor: pointer;
+      position: relative;
       margin-bottom: 8px;
     }
+
     .progress-bar {
       height: 100%;
       background: #1e90ff;
@@ -478,11 +584,20 @@ import Hls from 'hls.js'
       width: 0%;
       transition: width 0.1s;
     }
+
+    /* 第2行：按钮 + 状态 */
     .controls-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
+    .playback-controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
     .control-btn {
       background: none;
       border: 1px solid #666;
@@ -494,24 +609,29 @@ import Hls from 'hls.js'
       min-width: 36px;
       text-align: center;
     }
+
     .control-btn:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       border-color: #999;
     }
+
     .status-group {
       display: flex;
       align-items: center;
       gap: 12px;
     }
+
     .time-display {
       font-size: 13px;
       white-space: nowrap;
     }
+
     .volume-control {
       display: flex;
       align-items: center;
       gap: 6px;
     }
+
     .volume-slider {
       width: 60px;
       height: 4px;
@@ -520,13 +640,15 @@ import Hls from 'hls.js'
       cursor: pointer;
       position: relative;
     }
+
     .volume-level {
       height: 100%;
       background: white;
       border-radius: 2px;
       width: 80%;
     }
-    select, input[type="color"] {
+
+    select.speed-select {
       background: rgba(255,255,255,0.1);
       color: white;
       border: 1px solid #666;
@@ -535,25 +657,8 @@ import Hls from 'hls.js'
       font-size: 12px;
       cursor: pointer;
     }
-    input[type="color"] {
-      padding: 2px;
-      width: 40px;
-      height: 24px;
-    }
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-    input[type="text"] {
-      flex: 1;
-      min-width: 200px;
-      padding: 6px;
-    }
-    .hint {
-      font-size: 12px;
-      color: #666;
-      margin-top: 10px;
-    }
+
+    /* ✅ 全屏样式（关键修复） */
     .player-fullscreen-target.fullscreen {
       position: fixed !important;
       top: 0 !important;
@@ -563,7 +668,50 @@ import Hls from 'hls.js'
       z-index: 2000;
       background: #000;
     }
+
     .player-fullscreen-target.fullscreen .video-container {
       height: calc(100vh - var(--controls-height)) !important;
+    }
+
+    .player-fullscreen-target.fullscreen #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 填满无黑边（可改为 contain 保留比例） */
+    }
+
+    /* 顶部加载区 */
+    .top-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 6px;
+    }
+
+    .preview-container {
+      margin-top: 15px;
+      display: none;
+    }
+
+    #cropPreview {
+      width: 300px;
+      height: 180px;
+      background: #000;
+      border: 1px solid #999;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
     }
   </style>
