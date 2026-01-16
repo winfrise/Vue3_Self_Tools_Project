@@ -44,8 +44,7 @@
       </div>
     </div>
 
-    <!-- 放大镜 -->
-    <div id="magnifier"><canvas></canvas></div>
+
 
     <!-- 顶部控制 -->
     <div class="top-controls">
@@ -69,6 +68,10 @@
     </div>
   </div>
 
+  <teleport to="body">
+    <!-- 放大镜 -->
+    <div id="magnifier"><canvas></canvas></div>
+  </teleport>
 
 </template>
 
@@ -537,6 +540,7 @@
       width: 150px;
       height: 150px;
       border-radius: 50%;
+      transform: translate(-50%, -50%);
       box-shadow: 0 0 12px rgba(0,0,0,0.6);
       pointer-events: none;
       display: none;
