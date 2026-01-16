@@ -5,7 +5,7 @@
     <!-- 全屏目标容器 -->
     <div class="player-fullscreen-target" id="fullscreenTarget">
       <div class="video-container" id="container">
-        <video id="video"></video>
+        <video id="video" ref="videoRef"></video>
         <div id="selection"></div>
       </div>
 
@@ -48,9 +48,9 @@
 
     <!-- 顶部控制 -->
     <div class="top-controls">
-      <input type="text" id="urlInput" placeholder="输入视频地址（支持 .m3u8 或 .mp4）"
-             value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />
-      <button id="loadBtn">加载视频</button>
+      <el-input placeholder="输入视频地址（支持 .m3u8 或 .mp4）"
+        v-model="networkVideoUrl" />
+      <el-button @click="handleLoadVideo">加载网络视频</el-button>
       <button id="zoomIn">+</button>
       <button id="zoomOut">−</button>
       <span id="zoomLevel">100%</span>
@@ -76,15 +76,23 @@
 </template>
 
   <script setup>
-  import { onMounted } from 'vue';
-    import Hls from 'hls.js';
+  import { onMounted, ref, unref } from 'vue';
+  import Hls from 'hls.js';
+  import { loadVideo } from './utils/loadVideo';
+    
+  const videoRef = ref(null)
+  const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
+
+  const handleLoadVideo = () => {
+    // resetView() // 重置
+    loadVideo({videoEl: unref(videoRef), videoUrl: unref(networkVideoUrl)})
+  }
+
   onMounted(() => {
         // ========== DOM ==========
     const video = document.getElementById('video');
     const container = document.getElementById('container');
     const fullscreenTarget = document.getElementById('fullscreenTarget');
-    const urlInput = document.getElementById('urlInput');
-    const loadBtn = document.getElementById('loadBtn');
     const zoomInBtn = document.getElementById('zoomIn');
     const zoomOutBtn = document.getElementById('zoomOut');
     const resetBtn = document.getElementById('resetView');
@@ -151,21 +159,6 @@
       translateY = 0;
       updateTransform();
       hideSelection();
-    }
-
-    function loadVideo(src) {
-      resetView();
-      if (Hls.isSupported() && src.endsWith('.m3u8')) {
-        if (video.hls) video.hls.destroy();
-        const hls = new Hls();
-        video.hls = hls;
-        hls.loadSource(src);
-        hls.attachMedia(video);
-      } else if (video.canPlayType('application/vnd.apple.mpegurl') && src.endsWith('.m3u8')) {
-        video.src = src;
-      } else {
-        video.src = src;
-      }
     }
 
     // ========== 缩放 ==========
@@ -492,14 +485,6 @@
     }
     renderLoop();
 
-    // ========== 初始化 ==========
-    loadBtn.addEventListener('click', () => {
-      loadVideo(urlInput.value.trim());
-    });
-
-    window.addEventListener('load', () => {
-      loadVideo(urlInput.value.trim());
-    });
   })
   </script>
 
