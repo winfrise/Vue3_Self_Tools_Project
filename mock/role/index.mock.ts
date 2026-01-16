@@ -20,6 +20,27 @@ const adminList = [
         name: 'CustomSealGenerator',
         meta: {
           title: '印章生成大师',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
+    ]
+  },
+  {
+    path: '/custom-powerful-video-player',
+    component: '#',
+    name: '用户视频播放器',
+    meta: {
+      title: 'FFMPEG',
+      icon: 'vi-cib:telegram-plane'
+    },
+    children: [
+      {
+        path: 'custom-seal-generator',
+        component: 'views/CustomPowerfulVideoPlayer/VideoPlayerPage',
+        name: 'CustomPowerfulVideoPlayer',
+        meta: {
+          title: '视频播放器',
+          icon: 'vi-cib:telegram-plane'
         }
       },
     ]

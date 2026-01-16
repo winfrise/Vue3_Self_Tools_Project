@@ -59,6 +59,9 @@ importers:
       element-plus:
         specifier: 2.9.2
         version: 2.9.2(vue@3.5.13(typescript@5.7.3))
+      hls.js:
+        specifier: ^1.6.15
+        version: 1.6.15
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.22
@@ -3680,6 +3683,9 @@ packages:
 
   header-case@2.0.4:
     resolution: {integrity: sha512-H/vuk5TEEVZwrR0lp2zed9OCo1uAILMlx0JEMgC26rzyJJ3N1v6XkwHHXJQdR2doSjcGPM6OKPYoJgf0plJ11Q==}
+
+  hls.js@1.6.15:
+    resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
 
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
@@ -9731,6 +9737,8 @@ snapshots:
     dependencies:
       capital-case: 1.0.4
       tslib: 2.8.1
+
+  hls.js@1.6.15: {}
 
   homedir-polyfill@1.0.3:
     dependencies:
