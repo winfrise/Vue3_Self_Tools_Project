@@ -1,16 +1,22 @@
 <template>
   <div class="player-wrapper">
     <h2>高级视频播放器 - 全屏优化版</h2>
+    <ZoomContainer>
+      <video class="video"  ref="videoRef" ></video>
 
+
+    </ZoomContainer>
+      <!-- 自定义控制条 -->
+      <VideoControls :video="videoRef" />
     <!-- 全屏目标容器 -->
     <div class="player-fullscreen-target" id="fullscreenTarget">
       <div class="video-container" id="container">
-        <video id="video" ref="videoRef"></video>
+        <video id="video" class="video" ></video>
         <div id="selection"></div>
       </div>
 
       <!-- 自定义控制条 -->
-      <VideoControl :video="videoRef" />
+      <VideoControls :video="videoRef" />
     </div>
 
 
@@ -48,7 +54,8 @@
   import { onMounted, ref, unref } from 'vue';
   import Hls from 'hls.js';
   import { loadVideo } from './utils/loadVideo';
-  import VideoControl from './components/VideoControl.vue';
+  import VideoControls from './components/VideoControls.vue';
+  import ZoomContainer from './components/ZoomContainer.vue';
     
   const videoRef = ref(null)
   const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
@@ -58,299 +65,6 @@
     loadVideo({videoEl: unref(videoRef), videoUrl: unref(networkVideoUrl)})
   }
 
-  onMounted(() => {
-        // ========== DOM ==========
-    const video = document.getElementById('video');
-    const container = document.getElementById('container');
-    const fullscreenTarget = document.getElementById('fullscreenTarget');
-    const zoomInBtn = document.getElementById('zoomIn');
-    const zoomOutBtn = document.getElementById('zoomOut');
-    const resetBtn = document.getElementById('resetView');
-    const zoomLevelEl = document.getElementById('zoomLevel');
-    const magnifier = document.getElementById('magnifier');
-    const magnifierCanvas = magnifier.querySelector('canvas');
-    const selection = document.getElementById('selection');
-    const cropPreview = document.getElementById('cropPreview');
-    const previewContainer = document.getElementById('previewContainer');
-
-    // 控制条
-
-
-    // ========== 状态 ==========
-    let scale = 1;
-    let translateX = 0;
-    let translateY = 0;
-    const minScale = 0.1;
-    const maxScale = 10;
-
-    let isPanning = false;
-    let isSelecting = false;
-    let isMovingSelection = false;
-    let startPanX = 0, startPanY = 0;
-    let selectStart = { x: 0, y: 0 };
-    let cropRect = null;
-
-    const magSize = 150;
-    const halfMag = magSize / 2;
-    const magCtx = magnifierCanvas.getContext('2d');
-    magnifierCanvas.width = magSize;
-    magnifierCanvas.height = magSize;
-
-    let needsPreviewUpdate = false;
-
-    // ========== 工具函数 ==========
-
-
-    function updateTransform() {
-      video.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-      zoomLevelEl.textContent = `${Math.round(scale * 100)}%`;
-      if (cropRect) needsPreviewUpdate = true;
-    }
-
-    function resetView() {
-      scale = 1;
-      translateX = 0;
-      translateY = 0;
-      updateTransform();
-      hideSelection();
-    }
-
-    // ========== 缩放 ==========
-    zoomInBtn.addEventListener('click', () => {
-      scale = Math.min(maxScale, scale + 0.2);
-      updateTransform();
-    });
-
-    zoomOutBtn.addEventListener('click', () => {
-      scale = Math.max(minScale, scale - 0.2);
-      updateTransform();
-    });
-
-    resetBtn.addEventListener('click', resetView);
-
-    container.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      scale = Math.min(maxScale, Math.max(minScale, scale + delta));
-      updateTransform();
-    }, { passive: false });
-
-    // ========== 裁剪 ==========
-    function hideSelection() {
-      selection.style.display = 'none';
-      previewContainer.style.display = 'none';
-      cropRect = null;
-    }
-
-    function updateCropFromSelection() {
-      const rect = container.getBoundingClientRect();
-      const selLeft = parseFloat(selection.style.left);
-      const selTop = parseFloat(selection.style.top);
-      const selWidth = parseFloat(selection.style.width);
-      const selHeight = parseFloat(selection.style.height);
-
-      if (selWidth <= 0 || selHeight <= 0) return;
-
-      const videoRatio = video.videoWidth / video.videoHeight;
-      const containerRatio = rect.width / rect.height;
-      let drawWidth, drawHeight, offsetX, offsetY;
-
-      if (containerRatio > videoRatio) {
-        drawHeight = rect.height;
-        drawWidth = video.videoWidth * (drawHeight / video.videoHeight);
-        offsetX = (rect.width - drawWidth) / 2;
-        offsetY = 0;
-      } else {
-        drawWidth = rect.width;
-        drawHeight = video.videoHeight * (drawWidth / video.videoWidth);
-        offsetX = 0;
-        offsetY = (rect.height - drawHeight) / 2;
-      }
-
-      const cropX = ((selLeft - offsetX) / drawWidth) * video.videoWidth;
-      const cropY = ((selTop - offsetY) / drawHeight) * video.videoHeight;
-      const cropW = (selWidth / drawWidth) * video.videoWidth;
-      const cropH = (selHeight / drawHeight) * video.videoHeight;
-
-      cropRect = { x: cropX, y: cropY, width: cropW, height: cropH };
-      needsPreviewUpdate = true;
-    }
-
-    function updateCropPreview() {
-      if (!cropRect) return;
-      const { x, y, width, height } = cropRect;
-      const aspect = width / height;
-      let pw = 300, ph = 180;
-      if (aspect > pw / ph) ph = pw / aspect;
-      else pw = ph * aspect;
-      cropPreview.width = pw;
-      cropPreview.height = ph;
-      const ctx = cropPreview.getContext('2d');
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, pw, ph);
-      ctx.drawImage(video, x, y, width, height, 0, 0, pw, ph);
-      needsPreviewUpdate = false;
-    }
-
-    
-    // ========== 鼠标交互 ==========
-    container.addEventListener('mousedown', (e) => {
-      const rect = container.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      if (selection.style.display !== 'none') {
-        const selRect = selection.getBoundingClientRect();
-        if (e.clientX >= selRect.left && e.clientX <= selRect.right &&
-            e.clientY >= selRect.top && e.clientY <= selRect.bottom) {
-          isMovingSelection = true;
-          startPanX = e.clientX - parseFloat(selection.style.left);
-          startPanY = e.clientY - parseFloat(selection.style.top);
-          e.preventDefault();
-          return;
-        }
-      }
-
-      if (e.shiftKey) {
-        selectStart.x = mouseX;
-        selectStart.y = mouseY;
-        isSelecting = true;
-        selection.style.display = 'block';
-        selection.style.left = mouseX + 'px';
-        selection.style.top = mouseY + 'px';
-        selection.style.width = '0px';
-        selection.style.height = '0px';
-        e.preventDefault();
-        return;
-      }
-
-      isPanning = true;
-      startPanX = e.clientX - translateX;
-      startPanY = e.clientY - translateY;
-      container.style.cursor = 'grabbing';
-      e.preventDefault();
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      const rect = container.getBoundingClientRect();
-
-      if (isMovingSelection) {
-        selection.style.left = (e.clientX - startPanX) + 'px';
-        selection.style.top = (e.clientY - startPanY) + 'px';
-        updateCropFromSelection();
-        return;
-      }
-
-      if (isSelecting) {
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const left = Math.min(selectStart.x, mouseX);
-        const top = Math.min(selectStart.y, mouseY);
-        const width = Math.abs(mouseX - selectStart.x);
-        const height = Math.abs(mouseY - selectStart.y);
-        selection.style.left = left + 'px';
-        selection.style.top = top + 'px';
-        selection.style.width = width + 'px';
-        selection.style.height = height + 'px';
-        return;
-      }
-
-      if (isPanning) {
-        translateX = e.clientX - startPanX;
-        translateY = e.clientY - startPanY;
-        updateTransform();
-        return;
-      }
-
-      // 放大镜
-      if (video.videoWidth) {
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        const videoRatio = video.videoWidth / video.videoHeight;
-        const containerRatio = rect.width / rect.height;
-        let drawWidth, drawHeight, offsetX, offsetY;
-
-        if (containerRatio > videoRatio) {
-          drawHeight = rect.height;
-          drawWidth = video.videoWidth * (drawHeight / video.videoHeight);
-          offsetX = (rect.width - drawWidth) / 2;
-          offsetY = 0;
-        } else {
-          drawWidth = rect.width;
-          drawHeight = video.videoHeight * (drawWidth / video.videoWidth);
-          offsetX = 0;
-          offsetY = (rect.height - drawHeight) / 2;
-        }
-
-        const videoX = ((mouseX - offsetX) / drawWidth) * video.videoWidth;
-        const videoY = ((mouseY - offsetY) / drawHeight) * video.videoHeight;
-
-        magCtx.clearRect(0, 0, magSize, magSize);
-        magCtx.save();
-        magCtx.beginPath();
-        magCtx.arc(halfMag, halfMag, halfMag, 0, Math.PI * 2);
-        magCtx.clip();
-        magCtx.drawImage(video, 
-          videoX - halfMag, 
-          videoY - halfMag, 
-          magSize, 
-          magSize, 
-          0, 0, magSize, magSize
-        );
-        magCtx.restore();
-
-        let posX = e.clientX + 1;
-        let posY = e.clientY + 1;
-
-        if (posX + magSize > window.innerWidth) {
-          posX = e.clientX - magSize - 1;
-        }
-        if (posY + magSize > window.innerHeight) {
-          posY = e.clientY - magSize - 1;
-        }
-        if (posX < 0) posX = 1;
-        if (posY < 0) posY = 1;
-
-        magnifier.style.left = posX + 'px';
-        magnifier.style.top = posY + 'px';
-        magnifier.style.display = 'block';
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (isPanning) {
-        isPanning = false;
-        container.style.cursor = 'move';
-      }
-      if (isSelecting) {
-        isSelecting = false;
-        const w = parseFloat(selection.style.width);
-        const h = parseFloat(selection.style.height);
-        if (w < 10 || h < 10) {
-          hideSelection();
-        } else {
-          updateCropFromSelection();
-          previewContainer.style.display = 'block';
-        }
-      }
-      isMovingSelection = false;
-    });
-
-    container.addEventListener('mouseleave', () => {
-      magnifier.style.display = 'none';
-    });
-
-    // ========== 渲染循环 ==========
-    function renderLoop() {
-      if (needsPreviewUpdate) {
-        updateCropPreview();
-      }
-      requestAnimationFrame(renderLoop);
-    }
-    renderLoop();
-
-  })
   </script>
 
   <style scoped>
@@ -376,7 +90,7 @@
       cursor: move;
     }
 
-    #video {
+    .video {
       width: 100%;
       height: 100%;
       object-fit: contain;
