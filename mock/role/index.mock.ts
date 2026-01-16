@@ -46,6 +46,26 @@ const adminList = [
     ]
   },
   {
+    path: '/ffmpeg-tools',
+    component: '#',
+    name: 'FFmpeg工具',
+    meta: {
+      title: 'FFMPEG',
+      icon: 'vi-cib:telegram-plane'
+    },
+    children: [
+      {
+        path: 'video-cropper',
+        component: 'views/CustomFfmpegVideo/VideoCropperPage',
+        name: 'FFmpegVideoCropperPage',
+        meta: {
+          title: '视频裁剪',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
+    ]
+  },
+  {
     path: '/dashboard',
     component: '#',
     redirect: '/dashboard/analysis',
