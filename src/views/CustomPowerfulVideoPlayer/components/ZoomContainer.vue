@@ -15,21 +15,14 @@
         transformOrigin: '0 0',
       }"
     >
-      <!-- 你的内容放在这里 -->
-      <slot />
+      <slot :mouseEvent="mouseEvent" :isMouseOver="isMouseOver" />
     </div>
 
-    <!-- 放大镜效果 -->
-    <teleport to="body">
-      <!-- 放大镜 -->
-      <div class="magnifier" v-if="magnifierVisible" :style="{left: magnifierPosition.left + 'px', top: magnifierPosition.top + 'px'}"><canvas ref="magnifierCanvasRef"></canvas></div>
-    </teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-
 // 状态
 const scale = ref(1)
 const translateX = ref(0)
@@ -48,11 +41,14 @@ const ZOOM_FACTOR = 0.1
 const MIN_SCALE = 0.2
 const MAX_SCALE = 5
 
-const magnifierPosition = reactive({
-  left: 0,
-  top: 0,
-})
+// 鼠标是否移入zoom-container容器
+const isMouseOver = ref(false)
 
+// 鼠标移动坐标（事件）
+const mouseEvent = reactive({
+  clientX: -1,
+  clientY: -1
+})
 
 function handleWheel(e: WheelEvent) {
   if (!containerRef.value) return
@@ -111,19 +107,16 @@ function handleMouseDown(e: MouseEvent) {
 }
 
 
-const magnifierCanvasRef = ref(null)
-const magnifierVisible = ref(false)
-
-const handleMouseOver = (mouseEvnet: MouseEvent) => {
-  magnifierVisible.value = true
+const handleMouseOver = (e: MouseEvent) => {
+  isMouseOver.value = true
 }
-const handleMouseMove = (moveEvent: MouseEvent) => {
+const handleMouseMove = (e: MouseEvent) => {
       // 更新放大镜位置
-    magnifierPosition.left = moveEvent.clientX
-    magnifierPosition.top = moveEvent.clientY
+  mouseEvent.clientX = e.clientX
+  mouseEvent.clientY = e.clientY
 }
-const handleMouseOut = (mouseEvnet: MouseEvent) => {
-  magnifierVisible.value = false
+const handleMouseOut = (e: MouseEvent) => {
+  isMouseOver.value = false
 }
 </script>
 
@@ -142,27 +135,10 @@ const handleMouseOut = (mouseEvnet: MouseEvent) => {
 }
 
 .zoom-content {
-  position: absolute;
-  top: 0;
-  left: 0;
   transition: none; /* 可选：关闭过渡动画 */
   transform-origin: 0 0;
   width: 100%;
   height: 100%;
   background: green;
-}
-
-/* 放大镜效果 */
-.magnifier {
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 12px rgba(0,0,0,0.6);
-  pointer-events: none;
-  z-index: 1000;
-  overflow: hidden;
-  background: red;
 }
 </style>

@@ -2,9 +2,15 @@
   <div class="player-wrapper">
     <h2>高级视频播放器 - 全屏优化版</h2>
     <ZoomContainer>
-      <video class="video"  ref="videoRef" ></video>
-
-
+      <template #default="{mouseEvent, isMouseOver}">
+        <video class="video"  ref="videoRef" ></video>
+        <VideoMagnifier 
+          :visible="isMouseOver"
+          :x="mouseEvent.clientX"
+          :y="mouseEvent.clientY"
+          :video="videoRef"
+        />
+      </template>
     </ZoomContainer>
       <!-- 自定义控制条 -->
       <VideoControls :video="videoRef" />
@@ -56,6 +62,7 @@
   import { loadVideo } from './utils/loadVideo';
   import VideoControls from './components/VideoControls.vue';
   import ZoomContainer from './components/ZoomContainer.vue';
+  import VideoMagnifier from './components/VideoMagnifier.vue';
     
   const videoRef = ref(null)
   const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
