@@ -1,10 +1,17 @@
 <template>
   <div class="canvas-container">
     <div class="toolbar">
-      <button @click="setMode('rect')">矩形</button>
-      <button @click="setMode('square')">正方形</button>
-      <button @click="setMode('circle')">圆形</button>
-      <button @click="clearAll">清除</button>
+        <p>
+          <button @click="setMode('rect')">矩形</button>
+          <button @click="setMode('square')">正方形</button>
+          <button @click="setMode('circle')">圆形</button>
+          <button @click="clearAll">清除</button>
+        </p>
+
+        <p>
+          透明度: <el-input-number v-model="config.alpha" size="small" :min="0" :max="1" :step="0.1"></el-input-number>
+          控制点: <el-switch v-model="config.controlPointerVisible" ></el-switch>
+        </p>
     </div>
     <canvas
       ref="canvasRef"
@@ -16,8 +23,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, nextTick } from 'vue';
+<script lang="ts" setup>
+import { onMounted, ref, unref, reactive, nextTick, watchEffect } from 'vue';
 
 interface Shape {
   type: 'rect' | 'square' | 'circle';
@@ -30,9 +37,7 @@ interface Shape {
   isMoving?: boolean;
 }
 
-export default defineComponent({
-  name: 'MaskCanvas',
-  setup() {
+
     const canvasRef = ref<HTMLCanvasElement | null>(null);
     const shapes = ref<Shape[]>([]);
     const currentMode = ref<'rect' | 'square' | 'circle' | null>(null);
@@ -40,6 +45,13 @@ export default defineComponent({
     const activeShapeIndex = ref<number | null>(null);
     const startX = ref(0);
     const startY = ref(0);
+
+    const config = reactive({
+      alpha: 0.9,
+      controlPointerVisible: false
+    })
+
+
 
     // 设置绘制模式
     const setMode = (mode: 'rect' | 'square' | 'circle') => {
@@ -253,7 +265,7 @@ export default defineComponent({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // 重置缩放
 
       // 1. 填充半透明遮罩
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillStyle = `rgba(0, 0, 0, ${config.alpha})`;
       ctx.fillRect(0, 0, width, height);
 
       // 2. “挖出”每个形状区域（使用 globalCompositeOperation）
@@ -275,48 +287,43 @@ export default defineComponent({
       ctx.globalCompositeOperation = 'source-over'; // 恢复默认
 
       // 可选：绘制边框和控制点（调试用）
-    //   shapes.value.forEach((shape) => {
-    //     ctx.strokeStyle = '#fff';
-    //     ctx.lineWidth = 2;
-    //     ctx.beginPath();
-    //     if (shape.type === 'circle') {
-    //       const centerX = shape.x + shape.width / 2;
-    //       const centerY = shape.y + shape.height / 2;
-    //       const radius = Math.min(shape.width, shape.height) / 2;
-    //       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    //     } else {
-    //       ctx.rect(shape.x, shape.y, shape.width, shape.height);
-    //     }
-    //     ctx.stroke();
+      if (config.controlPointerVisible) {
+        shapes.value.forEach((shape) => {
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          if (shape.type === 'circle') {
+            const centerX = shape.x + shape.width / 2;
+            const centerY = shape.y + shape.height / 2;
+            const radius = Math.min(shape.width, shape.height) / 2;
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          } else {
+            ctx.rect(shape.x, shape.y, shape.width, shape.height);
+          }
+          ctx.stroke();
 
-    //     // 绘制控制点（角点）
-    //     if (shape.type !== 'circle') {
-    //       const corners = [
-    //         [shape.x, shape.y],
-    //         [shape.x + shape.width, shape.y],
-    //         [shape.x, shape.y + shape.height],
-    //         [shape.x + shape.width, shape.y + shape.height],
-    //       ];
-    //       ctx.fillStyle = '#ff0';
-    //       corners.forEach(([cx, cy]) => {
-    //         ctx.beginPath();
-    //         ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-    //         ctx.fill();
-    //       });
-    //     }
-    //   });
-    };
+          // 绘制控制点（角点）
+          if (shape.type !== 'circle') {
+            const corners = [
+              [shape.x, shape.y],
+              [shape.x + shape.width, shape.y],
+              [shape.x, shape.y + shape.height],
+              [shape.x + shape.width, shape.y + shape.height],
+            ];
+            ctx.fillStyle = '#ff0';
+            corners.forEach(([cx, cy]) => {
+              ctx.beginPath();
+              ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          }
+        });
+      }
 
-    return {
-      canvasRef,
-      setMode,
-      clearAll,
-      handleMouseDown,
-      handleMouseMove,
-      handleMouseUp,
     };
-  },
-});
+    watchEffect(() => {
+      redraw()
+    })
 </script>
 
 <style scoped>
