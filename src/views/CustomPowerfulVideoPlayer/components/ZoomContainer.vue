@@ -18,6 +18,12 @@
       <slot :mouseEvent="mouseEvent" :isMouseOver="isMouseOver" />
     </div>
 
+    <div class="extra-wrapper">
+      <slot name="extra">
+
+      </slot>
+    </div>
+
   </div>
 </template>
 
@@ -111,9 +117,12 @@ const handleMouseOver = (e: MouseEvent) => {
   isMouseOver.value = true
 }
 const handleMouseMove = (e: MouseEvent) => {
-      // 更新放大镜位置
-  mouseEvent.clientX = e.clientX
-  mouseEvent.clientY = e.clientY
+  if (isMouseOver.value) {
+    // 更新放大镜位置
+    mouseEvent.clientX = e.clientX
+    mouseEvent.clientY = e.clientY
+  }
+
 }
 const handleMouseOut = (e: MouseEvent) => {
   isMouseOver.value = false
@@ -140,5 +149,12 @@ const handleMouseOut = (e: MouseEvent) => {
   width: 100%;
   height: 100%;
   background: green;
+}
+.extra-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 </style>

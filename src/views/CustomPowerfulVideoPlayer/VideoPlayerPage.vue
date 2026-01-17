@@ -19,18 +19,22 @@
     <ZoomContainer>
       <template #default="{mouseEvent, isMouseOver}">
         <video class="video"  ref="videoRef" ></video>
+
+
         <VideoMagnifier 
           :visible="isMouseOver"
           :x="mouseEvent.clientX"
           :y="mouseEvent.clientY"
           :video="videoRef"
         />
+        
+      </template>
+      <template #extra>
+          <VideoMask />
       </template>
     </ZoomContainer>
       <!-- 自定义控制条 -->
       <VideoControls :video="videoRef" />
-
-
 
 
 
@@ -49,6 +53,7 @@
   import VideoControls from './components/VideoControls.vue';
   import ZoomContainer from './components/ZoomContainer.vue';
   import VideoMagnifier from './components/VideoMagnifier.vue';
+  import VideoMask from './components/VideoMask.vue';
     
   const videoRef = ref(null)
   const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
