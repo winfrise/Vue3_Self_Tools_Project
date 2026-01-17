@@ -6,66 +6,6 @@ const timeout = 1000
 
 const adminList = [
   {
-    path: '/custom-page',
-    component: '#',
-    name: '用户自定义页面',
-    meta: {
-      title: 'FFMPEG',
-      icon: 'vi-cib:telegram-plane'
-    },
-    children: [
-      {
-        path: 'custom-seal-generator',
-        component: 'views/CustomSealGenerator/SealGenerator',
-        name: 'CustomSealGenerator',
-        meta: {
-          title: '印章生成大师',
-          icon: 'vi-cib:telegram-plane'
-        }
-      },
-    ]
-  },
-  {
-    path: '/custom-powerful-video-player',
-    component: '#',
-    name: '用户视频播放器',
-    meta: {
-      title: 'FFMPEG',
-      icon: 'vi-cib:telegram-plane'
-    },
-    children: [
-      {
-        path: 'custom-seal-generator',
-        component: 'views/CustomPowerfulVideoPlayer/VideoPlayerPage',
-        name: 'CustomPowerfulVideoPlayer',
-        meta: {
-          title: '视频播放器',
-          icon: 'vi-cib:telegram-plane'
-        }
-      },
-    ]
-  },
-  {
-    path: '/ffmpeg-tools',
-    component: '#',
-    name: 'FFmpeg工具',
-    meta: {
-      title: 'FFMPEG',
-      icon: 'vi-cib:telegram-plane'
-    },
-    children: [
-      {
-        path: 'video-cropper',
-        component: 'views/CustomFfmpegVideo/VideoCropperPage',
-        name: 'FFmpegVideoCropperPage',
-        meta: {
-          title: '视频裁剪',
-          icon: 'vi-cib:telegram-plane'
-        }
-      },
-    ]
-  },
-  {
     path: '/dashboard',
     component: '#',
     redirect: '/dashboard/analysis',
@@ -96,6 +36,44 @@ const adminList = [
           affix: true
         }
       }
+    ]
+  },
+  {
+    path: '/custom-page',
+    component: '#',
+    name: 'CustomPage',
+    meta: {
+      title: '用户自定义页面',
+      icon: 'vi-cib:telegram-plane'
+    },
+    children: [
+      {
+        path: 'custom-seal-generator',
+        component: 'views/CustomSealGenerator/SealGenerator',
+        name: 'CustomSealGenerator',
+        meta: {
+          title: '印章生成大师',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
+      {
+        path: 'powerfull-video-player',
+        component: 'views/CustomPowerfulVideoPlayer/VideoPlayerPage',
+        name: 'CustomPowerfulVideoPlayer',
+        meta: {
+          title: '视频播放器',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
+      {
+        path: 'video-cropper',
+        component: 'views/CustomFfmpegVideo/VideoCropperPage',
+        name: 'FFmpegVideoCropperPage',
+        meta: {
+          title: '视频裁剪',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
     ]
   },
   {
