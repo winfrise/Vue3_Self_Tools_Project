@@ -26,7 +26,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="输出文件" prop="output">
-        <el-input v-model="form.output" placeholder="2026年01月17日17时30分[1729183845123].mp4">
+        <el-input v-model="form.output" placeholder="2026年01月17日17时30分123.mp4">
           <template #append>
             <el-button @click="generateOutputName" size="small">✨ 时间戳名</el-button>
           </template>
