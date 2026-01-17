@@ -2,9 +2,7 @@
   <div class="player-wrapper">
     <!-- 顶部控制 -->
     <div class="top-controls">
-      <el-input placeholder="输入视频地址（支持 .m3u8 或 .mp4）"
-        v-model="networkVideoUrl" />
-      <el-button @click="handleLoadVideo">加载网络视频</el-button>
+      <ChooseVideo @change="handleLoadVideo" />
       <button id="zoomIn">+</button>
       <button id="zoomOut">−</button>
       <span id="zoomLevel">100%</span>
@@ -12,7 +10,7 @@
     </div>
 
     <div>
-      显示遮罩：<el-switch v-model="canvasMaskVisible"></el-switch>
+      显示遮罩：<el-switch size="samll" v-model="canvasMaskVisible"></el-switch>
     </div>
     <p class="hint">
       操作提示：<br>
@@ -53,20 +51,21 @@
   import ZoomContainer from './components/ZoomContainer.vue';
   import VideoMagnifier from './components/VideoMagnifier.vue';
   import VideoMask from './components/VideoMask.vue';
+  import ChooseVideo from './components/ChooseVideo.vue'
     
   const videoRef = ref(null)
-  const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
+  const onlineVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
 
     const canvasMaskVisible = ref(false)
 
-  const handleLoadVideo = () => {
+  const handleLoadVideo = (videoUrl) => {
     // resetView() // 重置
-    loadVideo({videoEl: unref(videoRef), videoUrl: unref(networkVideoUrl)})
+    loadVideo({videoEl: unref(videoRef), videoUrl: videoUrl})
   }
 
   onMounted(() => {
-    if (unref(networkVideoUrl)) {
-      handleLoadVideo()
+    if (unref(onlineVideoUrl)) {
+      handleLoadVideo(unref(onlineVideoUrl))
     }
   })
   </script>
