@@ -99,33 +99,6 @@ const adminList = [
     ]
   },
   {
-    path: '/ffmpeg',
-    component: '#',
-    name: 'FFMPEG',
-    meta: {
-      title: 'FFMPEG',
-      icon: 'vi-cib:telegram-plane'
-    },
-    children: [
-      {
-        path: 'cropper-demo',
-        component: 'views/Ffmpeg/CropperDemo',
-        name: 'CropperDemo',
-        meta: {
-          title: 'Cropper裁剪示例',
-        }
-      },
-      {
-        path: 'ffmpeg-demo',
-        component: 'views/Guide/Guide',
-        name: 'CuptureDemo',
-        meta: {
-          title: 'Ffmpeg示例',
-        }
-      }
-    ]
-  },
-  {
     path: '/hooks',
     component: '#',
     redirect: '/hooks/useWatermark',
