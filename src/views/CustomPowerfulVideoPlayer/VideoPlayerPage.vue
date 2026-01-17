@@ -10,6 +10,10 @@
       <span id="zoomLevel">100%</span>
       <button id="resetView">重置视图</button>
     </div>
+
+    <div>
+      显示遮罩：<el-switch v-model="canvasMaskVisible"></el-switch>
+    </div>
     <p class="hint">
       操作提示：<br>
       • 滚轮：缩放｜直接拖动：平移｜Shift+拖动：裁剪<br>
@@ -29,7 +33,7 @@
         />
         
       </template>
-      <template #extra>
+      <template v-if="canvasMaskVisible" #extra>
           <VideoMask />
       </template>
     </ZoomContainer>
@@ -37,11 +41,6 @@
       <VideoControls :video="videoRef" />
 
 
-
-    <div class="preview-container" id="previewContainer">
-      <h3>区域裁剪预览</h3>
-      <canvas id="cropPreview"></canvas>
-    </div>
   </div>
 
 </template>
@@ -57,6 +56,8 @@
     
   const videoRef = ref(null)
   const networkVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
+
+    const canvasMaskVisible = ref(false)
 
   const handleLoadVideo = () => {
     // resetView() // 重置

@@ -1,4 +1,5 @@
 <template>
+<div class="zoom-wrapper">
   <div
     ref="containerRef"
     class="zoom-container"
@@ -17,14 +18,13 @@
     >
       <slot :mouseEvent="mouseEvent" :isMouseOver="isMouseOver" />
     </div>
-
-    <div class="extra-wrapper">
-      <slot name="extra">
-
-      </slot>
-    </div>
-
   </div>
+  <div v-if="$slots.extra" class="extra-wrapper">
+    <slot name="extra">
+
+    </slot>
+  </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -130,6 +130,9 @@ const handleMouseOut = (e: MouseEvent) => {
 </script>
 
 <style scoped>
+  .zoom-wrapper {
+    position: relative;
+  }
 .zoom-container {
   width: 100%;
   height: 400px;
