@@ -11,6 +11,8 @@
 
     <div>
       显示遮罩：<el-switch size="samll" v-model="canvasMaskVisible"></el-switch>
+
+      显示放大镜：<el-switch size="samll" v-model="magnifierVisible"></el-switch>
     </div>
     <p class="hint">
       操作提示：<br>
@@ -22,8 +24,7 @@
       <template #default="{mouseEvent, isMouseOver}">
         <video class="video"  ref="videoRef" ></video>
 
-
-        <VideoMagnifier 
+        <VideoMagnifier v-if="magnifierVisible"
           :visible="isMouseOver"
           :x="mouseEvent.clientX"
           :y="mouseEvent.clientY"
@@ -57,6 +58,7 @@
   const onlineVideoUrl = ref('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8') // 网络视频地址
 
     const canvasMaskVisible = ref(false)
+    const magnifierVisible = ref(false)
 
   const handleLoadVideo = (videoUrl) => {
     // resetView() // 重置

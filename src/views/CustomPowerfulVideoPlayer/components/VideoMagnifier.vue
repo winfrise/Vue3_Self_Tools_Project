@@ -5,11 +5,19 @@
         <div class="magnifier" 
             v-show="visible" 
             :style="{
+                width: size +'px',
+                height: size + 'px',
                 left: props.x + 'px', 
                 top: props.y + 'px'
             }"
         >
-            <canvas width="150" height="150" ref="canvasRef" class="canvas"></canvas>
+            <canvas ref="canvasRef" class="canvas" 
+                :width="size" height="size"  
+                :style="{
+                    width: size + 'px', 
+                    height: size + 'px'
+                }"
+            ></canvas>
         </div>
     </teleport>
 </template>
@@ -27,14 +35,16 @@ interface Props {
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const props = defineProps<Props>()
 
+const size = ref(300)
+const zoom = ref(1.5)
 
 onMounted(async () => {
     await nextTick()
     // 视频鼠标移动事件
     const video = unref(props.video)
     video.addEventListener('mousemove', (e) => {
-        const magnifierSize = 150 // 放大镜尺寸
-        const zoomFactor = 3; // 放大倍数
+        const magnifierSize = unref(size) // 放大镜尺寸
+        const zoomFactor = unref(zoom); // 放大倍数
         // 获取视频元素的边界
         const rect = video.getBoundingClientRect();
 
@@ -101,8 +111,6 @@ onMounted(async () => {
 /* 放大镜效果 */
 .magnifier {
   position: absolute;
-  width: 150px;
-  height: 150px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 12px rgba(0,0,0,0.6);
@@ -110,11 +118,9 @@ onMounted(async () => {
   z-index: 1000;
   overflow: hidden;
   background: red;
-  opacity: 0.7;
+  opacity: 1;
 }
 .canvas {
     display: block;
-    width: 150px;
-    height: 150px
 }
 </style>
