@@ -18,12 +18,13 @@
     >
       <slot :mouseEvent="mouseEvent" :isMouseOver="isMouseOver" />
     </div>
-  </div>
-  <div v-if="$slots.extra" class="extra-wrapper">
-    <slot name="extra">
+    <div v-if="$slots.extra" class="extra-wrapper">
+      <slot name="extra">
 
-    </slot>
+      </slot>
+    </div>
   </div>
+
 </div>
 </template>
 
@@ -45,7 +46,7 @@ let lastY = 0
 // 滚轮缩放
 const ZOOM_FACTOR = 0.1
 const MIN_SCALE = 0.2
-const MAX_SCALE = 5
+const MAX_SCALE = 10
 
 // 鼠标是否移入zoom-container容器
 const isMouseOver = ref(false)
@@ -134,8 +135,8 @@ const handleMouseOut = (e: MouseEvent) => {
     position: relative;
   }
 .zoom-container {
-  width: 100%;
-  height: 400px;
+  width: 960px;
+  height: 450px;
   overflow: hidden;
   position: relative;
   cursor: grab;
@@ -151,7 +152,6 @@ const handleMouseOut = (e: MouseEvent) => {
   transform-origin: 0 0;
   width: 100%;
   height: 100%;
-  background: green;
 }
 .extra-wrapper {
   position: absolute;

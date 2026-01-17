@@ -126,6 +126,7 @@ interface Shape {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
+      if (!e.shiftKey)  return
       const pos = getMousePos(e);
       const mouseX = pos.x;
       const mouseY = pos.y;
@@ -171,6 +172,7 @@ interface Shape {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (!e.shiftKey)  return
       if (!isDrawing.value || activeShapeIndex.value === null) return;
       const pos = getMousePos(e);
       const mouseX = pos.x;
@@ -242,7 +244,8 @@ interface Shape {
       redraw();
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
+      if (!e.shiftKey)  return
       if (isDrawing.value && activeShapeIndex.value !== null) {
         const shape = shapes.value[activeShapeIndex.value];
         shape.isMoving = false;
