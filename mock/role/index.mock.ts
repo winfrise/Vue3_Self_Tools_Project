@@ -74,6 +74,15 @@ const adminList = [
           icon: 'vi-cib:telegram-plane'
         }
       },
+      {
+        path: 'ffmpeg-generator',
+        component: 'views/CustomFfmpegGenerator/FfmpegGenerator',
+        name: 'FfmpegGenerator',
+        meta: {
+          title: 'Ffmpeg命令生成',
+          icon: 'vi-cib:telegram-plane'
+        }
+      },
     ]
   },
   {
