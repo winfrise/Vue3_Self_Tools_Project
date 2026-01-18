@@ -27,7 +27,7 @@
                 style="width: 100%"
               >
       <template #suffix>
-        <span class="computed-suffix"> → 111</span>
+        <span class="computed-suffix"> → {{ realShape.width && Math.ceil(realShape.width) }}</span>
       </template>
               </el-input-number>
             </el-form-item>
@@ -39,7 +39,11 @@
                 :min="1"
                 controls-position="right"
                 style="width: 100%"
-              />
+              >
+                <template #suffix>
+                  <span class="computed-suffix"> → {{ realShape.height && Math.ceil(realShape.height) }}</span>
+                </template>
+              </el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -52,7 +56,11 @@
                 :min="0"
                 controls-position="right"
                 style="width: 100%"
-              />
+              >
+                <template #suffix>
+                  <span class="computed-suffix"> → {{ realShape.x && Math.ceil(realShape.x) }}</span>
+                </template>
+              </el-input-number>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -62,7 +70,11 @@
                 :min="0"
                 controls-position="right"
                 style="width: 100%"
-              />
+              >
+                <template #suffix>
+                  <span class="computed-suffix"> → {{ realShape.y && Math.ceil(realShape.y) }}</span>
+                </template>
+              </el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -83,7 +95,7 @@
         </el-row>
       </el-form>
     </div>
-    <VideoPlayer :src="form.input" >
+    <VideoPlayer :src="form.input" @loadedMetaData="handleLoadedMetaData">
       <VideoMask v-model:shape="shape"
       ></VideoMask>
     </VideoPlayer>
@@ -108,10 +120,10 @@ interface FormModel {
 
 const form = reactive<FormModel>({
   input: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-  w: 640,
-  h: 480,
-  x: 640,
-  y: 360,
+  w: 100,
+  h: 100,
+  x: 20,
+  y: 20,
   output: ''
 })
 
@@ -132,6 +144,25 @@ const shape = computed({
   }
 })
 
+const realShape = computed(() => {
+  if (scaleRatio.value) {
+    return {
+      x: form.x / scaleRatio.value,
+      y: form.y / scaleRatio.value,
+      width: form.w / scaleRatio.value,
+      height: form.h / scaleRatio.value
+    }
+  }
+  return {}
+
+})
+
+const scaleRatio = ref(null)
+
+const handleLoadedMetaData = ({scale}) => {
+  scaleRatio.value = scale
+}
+
 const rules = reactive<FormRules<FormModel>>({
   input: [{ required: true, message: '请输入输入视频', trigger: 'blur' }],
   w: [{ required: true, message: '请输入宽度', trigger: 'blur' }],
@@ -144,7 +175,8 @@ const rules = reactive<FormRules<FormModel>>({
 const formRef = ref<FormInstance>()
 
 const command = computed(() => {
-  return `ffmpeg -i "${form.input}" -vf "crop=${form.w}:${form.h}:${form.x}:${form.y}" -c:a copy "${form.output}"`
+  const { x, y, width, height} = realShape.value
+  return `ffmpeg -i "${form.input}" -vf "crop=${width}:${height}:${x}:${y}" -c:a copy "${form.output}"`
 })
 
 const generateOutputName = () => {

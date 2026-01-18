@@ -23,6 +23,7 @@
 import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import VideoControls from './VideoControls.vue' // 请根据实际路径调整
 import Hls from 'hls.js'
+import { calculateCenteredScale } from './utils/calculateCenteredScale'
 
 interface Props {
   src: string
@@ -37,6 +38,9 @@ let hlsInstance: Hls | null = null
 // 判断是否为 m3u8
 const isM3U8 = computed(() => props.src.endsWith('.m3u8'))
 
+const emit = defineEmits<{
+  (e: 'loadedMetaData', data): void
+}>()
 
 // 初始化播放器
 const initializePlayer = () => {
@@ -88,8 +92,17 @@ onBeforeUnmount(() => {
 })
 
 // 可选：监听元数据加载（用于调试）
-const onLoadedMetadata = () => {
-  console.log('Video metadata loaded')
+const onLoadedMetadata = (e) => {
+  if (!videoRef.value) return
+  const rect = e.target.getBoundingClientRect();
+  const containerWidth = rect.width
+  const containerHeight = rect.height
+  const videoWidth = videoRef.value?.videoWidth
+  const videoHeight = videoRef.value?.videoHeight
+  const { left, right, top, bottom, scale, displayWidth, displayHeight } = calculateCenteredScale(containerWidth, containerHeight, videoWidth, videoHeight)
+  emit('loadedMetaData', {
+    left, right, top, bottom, scale, displayWidth, displayHeight
+  })
 }
 </script>
 

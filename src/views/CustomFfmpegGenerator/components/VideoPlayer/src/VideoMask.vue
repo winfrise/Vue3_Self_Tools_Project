@@ -30,15 +30,13 @@
       y: number;
       width: number;
       height: number;
-      // 用于交互状态
-      resizingCorner?: 'tl' | 'tr' | 'bl' | 'br';
-      isMoving?: boolean;
     }
 
     interface Props {
       shape: Shape
     }
 
+    type ResizingCorner = 'tl' | 'tr' | 'bl' | 'br' | null;
 
     const props = defineProps<Props>()
 
@@ -58,6 +56,8 @@
     const isDrawing = ref(false);
     const startX = ref(0);
     const startY = ref(0);
+    const resizingCorner = ref<ResizingCorner>(null)
+    const isMoving = ref(false)
 
     const config = reactive({
       alpha: 0.5,
@@ -132,7 +132,7 @@
     };
 
     // 判断是否点击在某个形状的角点上（用于调整大小）
-    const getResizingCorner = (shape: Shape, mouseX: number, mouseY: number): Shape['resizingCorner'] => {
+    const getResizingCorner = (shape: Shape, mouseX: number, mouseY: number): ResizingCorner | undefined=> {
       const tolerance = 8;
       const { x, y, width, height } = shape;
 
@@ -159,7 +159,7 @@
         const corner = getResizingCorner(shape.value, mouseX, mouseY);
         if (corner) {
           // 开始调整大小
-          shape.value.resizingCorner = corner;
+          resizingCorner.value = corner;
           startX.value = mouseX;
           startY.value = mouseY;
           return;
@@ -167,7 +167,7 @@
 
         if (isPointInShape(shape.value, mouseX, mouseY)) {
           // 开始移动
-          shape.value.isMoving = true;
+          isMoving.value = true;
           startX.value = mouseX - shape.value.x;
           startY.value = mouseY - shape.value.y;
           return;
@@ -194,18 +194,18 @@
 
 
       if (shape.value) {
-        if (shape.value.isMoving) {
+        if (isMoving.value) {
           shape.value.x = mouseX - startX.value;
           shape.value.y = mouseY - startY.value;
           redraw();
           return;
         }
 
-        if (shape.value.resizingCorner) {
+        if (resizingCorner.value) {
           const dx = mouseX - startX.value;
           const dy = mouseY - startY.value;
 
-          switch (shape.value.resizingCorner) {
+          switch (resizingCorner.value) {
             case 'tl':
               shape.value.x += dx;
               shape.value.y += dy;
@@ -252,8 +252,8 @@
       if (!e.shiftKey)  return
 
       if (shape.value && isDrawing.value ) {
-        shape.value.isMoving = false;
-        shape.value.resizingCorner = undefined;
+        isMoving.value = false;
+        resizingCorner.value = null;
       }
       isDrawing.value = false;
     };
