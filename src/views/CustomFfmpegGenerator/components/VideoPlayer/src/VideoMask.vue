@@ -50,7 +50,6 @@ interface Shape {
     onMounted(() => {
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
-      redraw();
     });
     // 核心绘制函数：反向遮罩
     const redraw = () => {
@@ -64,7 +63,6 @@ interface Shape {
       const height = canvasRef.value.clientHeight;
 
       ctx.clearRect(0, 0, width * dpr, height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // 重置缩放
 
       // 1. 填充半透明遮罩
       ctx.fillStyle = `rgba(0, 0, 0, ${config.alpha})`;
@@ -129,6 +127,7 @@ interface Shape {
 
     const handleMouseDown = (e: MouseEvent) => {
       if (!e.shiftKey)  return
+      isDrawing.value = true;
       const pos = getMousePos(e);
       const mouseX = pos.x;
       const mouseY = pos.y;
@@ -139,7 +138,6 @@ interface Shape {
           shape.value.resizingCorner = corner;
           startX.value = mouseX;
           startY.value = mouseY;
-          isDrawing.value = true;
           return;
         }
 
@@ -148,12 +146,11 @@ interface Shape {
           shape.value.isMoving = true;
           startX.value = mouseX - shape.value.x;
           startY.value = mouseY - shape.value.y;
-          isDrawing.value = true;
           return;
         }
       }
 
-      isDrawing.value = true;
+
       startX.value = mouseX;
       startY.value = mouseY;
       shape.value = ({
@@ -162,6 +159,8 @@ interface Shape {
         width: 0,
         height: 0,
       });
+
+      console.log(shape.value)
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -209,18 +208,20 @@ interface Shape {
           // 保持最小尺寸
           shape.value.width = Math.max(10, shape.value.width);
           shape.value.height = Math.max(10, shape.value.height);
+          startX.value = mouseX
+          startY.value = mouseY
+        } else {
+          // 正在绘制新形状
+          let w = mouseX - startX.value;
+          let h = mouseY - startY.value;
+
+
+          shape.value.x = w < 0 ? startX.value + w : startX.value;
+          shape.value.y = h < 0 ? startY.value + h : startY.value;
+          shape.value.width = Math.abs(w);
+          shape.value.height = Math.abs(h);
         }
 
-
-        // 正在绘制新形状
-        let w = mouseX - startX.value;
-        let h = mouseY - startY.value;
-
-
-        shape.value.x = w < 0 ? startX.value + w : startX.value;
-        shape.value.y = h < 0 ? startY.value + h : startY.value;
-        shape.value.width = Math.abs(w);
-        shape.value.height = Math.abs(h);
         redraw();
       }
     };
