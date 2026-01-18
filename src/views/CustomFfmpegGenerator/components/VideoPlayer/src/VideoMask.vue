@@ -23,17 +23,29 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, unref, reactive, nextTick, watchEffect } from 'vue';
+    import { onMounted, ref, unref, watch, reactive, nextTick, watchEffect, computed } from 'vue';
 
-interface Shape {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  // 用于交互状态
-  resizingCorner?: 'tl' | 'tr' | 'bl' | 'br';
-  isMoving?: boolean;
-}
+    interface Shape {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      // 用于交互状态
+      resizingCorner?: 'tl' | 'tr' | 'bl' | 'br';
+      isMoving?: boolean;
+    }
+
+    interface Props {
+      shape: Shape
+    }
+
+
+    const props = defineProps<Props>()
+
+    watch(() => props.shape, () => {
+      shape.value = props.shape
+      resizeCanvas()
+    }, {deep: true})
 
 
     const canvasRef = ref<HTMLCanvasElement | null>(null);

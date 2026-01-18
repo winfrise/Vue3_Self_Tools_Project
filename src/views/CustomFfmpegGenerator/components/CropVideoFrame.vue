@@ -25,7 +25,11 @@
                 :min="1"
                 controls-position="right"
                 style="width: 100%"
-              />
+              >
+      <template #suffix>
+        <span class="computed-suffix"> → 111</span>
+      </template>
+              </el-input-number>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -80,7 +84,8 @@
       </el-form>
     </div>
     <VideoPlayer :src="form.input" >
-      <VideoMask></VideoMask>
+      <VideoMask v-model:shape="shape"
+      ></VideoMask>
     </VideoPlayer>
   </el-card>
 </template>
@@ -108,6 +113,15 @@ const form = reactive<FormModel>({
   x: 640,
   y: 360,
   output: ''
+})
+
+const shape = computed(() => {
+  return {
+    x: form.x,
+    y: form.y, 
+    width: form.w, 
+    height: form.h
+  }
 })
 
 const rules = reactive<FormRules<FormModel>>({
