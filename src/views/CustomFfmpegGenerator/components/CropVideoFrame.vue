@@ -2,81 +2,86 @@
 <template>
   <el-card shadow="hover">
     <template #header>
-      <div class="card-header">🖼️ 裁剪视频画面（区域裁剪）</div>
+      <div style="font-weight: bold;">🖼️ 裁剪视频画面（区域裁剪）</div>
     </template>
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-width="100px"
-      size="small"
-      @submit.prevent
-    >
-      <el-form-item label="输入视频" prop="input">
-        <el-input v-model="form.input" placeholder="input.mp4" />
-      </el-form-item>
+    <div style="display: flex; ">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-width="100px"
+        size="small"
+        @submit.prevent
+      >
+        <el-form-item label="输入视频" prop="input">
+          <el-input v-model="form.input" placeholder="input.mp4" />
+        </el-form-item>
 
-      <el-row :gutter="10">
-        <el-col :span="12">
-          <el-form-item label="宽度 (w)" prop="w">
-            <el-input-number
-              v-model="form.w"
-              :min="1"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="高度 (h)" prop="h">
-            <el-input-number
-              v-model="form.h"
-              :min="1"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-row :gutter="10">
+          <el-col :span="12">
+            <el-form-item label="宽度 (w)" prop="w">
+              <el-input-number
+                v-model="form.w"
+                :min="1"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="高度 (h)" prop="h">
+              <el-input-number
+                v-model="form.h"
+                :min="1"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-row :gutter="10">
-        <el-col :span="12">
-          <el-form-item label="X 坐标" prop="x">
-            <el-input-number
-              v-model="form.x"
-              :min="0"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="Y 坐标" prop="y">
-            <el-input-number
-              v-model="form.y"
-              :min="0"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-row :gutter="10">
+          <el-col :span="12">
+            <el-form-item label="X 坐标" prop="x">
+              <el-input-number
+                v-model="form.x"
+                :min="0"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Y 坐标" prop="y">
+              <el-input-number
+                v-model="form.y"
+                :min="0"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-form-item label="输出文件" prop="output">
-        <el-input v-model="form.output" placeholder="2026年01月17日17时30分123.mp4">
-          <template #append>
-            <el-button @click="generateOutputName" size="small">✨ 时间戳名</el-button>
-          </template>
-        </el-input>
-      </el-form-item>
-    </el-form>
+        <el-form-item label="输出文件" prop="output">
+          <el-input v-model="form.output" placeholder="2026年01月17日17时30分123.mp4">
+            <template #append>
+              <el-button @click="generateOutputName" size="small">✨ 时间戳名</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
 
-    <div class="command-preview">
-      <el-alert type="info" show-icon :closable="false" :title="command" />
-      <el-button size="small" type="primary" style="margin-top: 8px" @click="handleCopy">
-        📋 复制命令
-      </el-button>
+        <el-row>
+          <el-alert type="info" show-icon :closable="false" :title="command" />
+          <el-button size="small" type="primary" style="margin-top: 8px" @click="handleCopy">
+            📋 复制命令
+          </el-button>
+        </el-row>
+      </el-form>
     </div>
+    <VideoPlayer :src="form.input" >
+      <VideoMask></VideoMask>
+    </VideoPlayer>
   </el-card>
 </template>
 
@@ -85,6 +90,7 @@ import { reactive, ref, computed } from 'vue'
 import { ElMessage, FormInstance, FormRules } from 'element-plus'
 import { copyToClipboard } from '../utils/copyToClipboard'
 import { generateTimestampFilename } from '../utils/generateTimestampFilename'
+import { VideoPlayer, VideoMask } from './VideoPlayer'
 
 interface FormModel {
   input: string
@@ -96,7 +102,7 @@ interface FormModel {
 }
 
 const form = reactive<FormModel>({
-  input: 'input.mp4',
+  input: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   w: 640,
   h: 480,
   x: 640,
@@ -139,10 +145,5 @@ const handleCopy = async () => {
 </script>
 
 <style scoped>
-.card-header {
-  font-weight: bold;
-}
-.command-preview {
-  margin-top: 16px;
-}
+
 </style>

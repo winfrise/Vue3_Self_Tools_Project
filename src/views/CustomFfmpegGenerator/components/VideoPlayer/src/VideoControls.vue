@@ -183,6 +183,7 @@ onBeforeUnmount(() => {
   position: relative;
   background: rgba(0, 0, 0, 0.85);
   color: white;
+  height: 80px;
   padding: 8px 12px;
   pointer-events: none;
 }

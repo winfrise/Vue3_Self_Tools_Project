@@ -7,6 +7,9 @@
       @loadedmetadata="onLoadedMetadata"
     ></video>
     <VideoControls v-if="videoRef" :video="videoRef" />
+    <div v-if="$slots.default" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 80px);">
+          <slot></slot>
+    </div>
   </div>
 </template>
 
