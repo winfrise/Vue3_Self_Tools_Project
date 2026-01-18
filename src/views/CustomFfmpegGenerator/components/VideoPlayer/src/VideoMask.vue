@@ -42,10 +42,15 @@
 
     const props = defineProps<Props>()
 
+    const emit = defineEmits<{
+      (e: 'update:shape', data: Shape): void
+    }>()
+
     watch(() => props.shape, () => {
       shape.value = props.shape
       resizeCanvas()
     }, {deep: true})
+
 
 
     const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -57,6 +62,13 @@
     const config = reactive({
       alpha: 0.5,
     })
+
+
+    watch(shape, () => {
+      if (shape.value) {
+        emit('update:shape', shape.value)
+      }
+    }, {deep: true})
 
     // 初始化画布
     onMounted(() => {
@@ -171,8 +183,6 @@
         width: 0,
         height: 0,
       });
-
-      console.log(shape.value)
     };
 
     const handleMouseMove = (e: MouseEvent) => {

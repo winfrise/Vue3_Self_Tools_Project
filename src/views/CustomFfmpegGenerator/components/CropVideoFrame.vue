@@ -115,12 +115,20 @@ const form = reactive<FormModel>({
   output: ''
 })
 
-const shape = computed(() => {
-  return {
-    x: form.x,
-    y: form.y, 
-    width: form.w, 
-    height: form.h
+const shape = computed({
+  get() {
+    return {
+      x: form.x,
+      y: form.y, 
+      width: form.w, 
+      height: form.h
+    }
+  },
+  set(val) {
+    form.x = val.x
+    form.y = val.y
+    form.w = val.width
+    form.h = val.height
   }
 })
 
