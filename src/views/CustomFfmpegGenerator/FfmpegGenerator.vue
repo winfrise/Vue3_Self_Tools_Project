@@ -28,6 +28,8 @@
       <el-col :span="12"></el-col>
     </el-row>
   </div>
+
+  <VideoPlayer src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />
 </template>
 
 <script setup lang="ts">
@@ -36,6 +38,8 @@ import SegmentVideo from './components/SegmentVideo.vue'
 import CropVideo from './components/CropVideo.vue'
 import AddWatermark from './components/AddWatermark.vue'
 import CropVideoFrame from './components/CropVideoFrame.vue'
+
+import {VideoPlayer} from './components/VideoPlayer'
 
 </script>
 

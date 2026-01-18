@@ -67,8 +67,8 @@ const adminList = [
       },
       {
         path: 'video-cropper',
-        component: 'views/CustomFfmpegVideo/VideoCropperPage',
-        name: 'FFmpegVideoCropperPage',
+        component: 'views/CustomCropperVideo/CropperVideoPage',
+        name: 'CropperVideoPage',
         meta: {
           title: '视频裁剪',
           icon: 'vi-cib:telegram-plane'
