@@ -1,6 +1,6 @@
 <template>
   <div class="canvas-container">
-    <div class="toolbar">
+    <!-- <div class="toolbar">
       <p>
         透明度:
         <el-input-number
@@ -11,7 +11,8 @@
           :step="0.1"
         ></el-input-number>
       </p>
-    </div>
+    </div> -->
+
     <canvas
       ref="canvasRef"
       @mousedown="handleMouseDown"
@@ -42,10 +43,8 @@ interface Shape {
     const startY = ref(0);
 
     const config = reactive({
-      alpha: 0.9,
+      alpha: 0.5,
     })
-
-
 
     // 初始化画布
     onMounted(() => {

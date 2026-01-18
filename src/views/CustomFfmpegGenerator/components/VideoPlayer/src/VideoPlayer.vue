@@ -1,15 +1,21 @@
 <template>
   <div class="custom-video-player" ref="containerRef">
-    <video
-      ref="videoRef"
-      :poster="props.poster"
-      class="video-element"
-      @loadedmetadata="onLoadedMetadata"
-    ></video>
-    <VideoControls v-if="videoRef" :video="videoRef" />
-    <div v-if="$slots.default" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 80px);">
-          <slot></slot>
+    <div class="video-container">
+      <video
+        ref="videoRef"
+        :poster="props.poster"
+        class="video-element"
+        @loadedmetadata="onLoadedMetadata"
+      ></video>
+      <div v-if="$slots.default" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 80px);">
+            <slot></slot>
+      </div>
     </div>
+
+    <div style="width: 100%;height: 80px">
+      <VideoControls v-if="videoRef" :video="videoRef" />
+    </div>
+
   </div>
 </template>
 
@@ -87,24 +93,20 @@ const onLoadedMetadata = () => {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .custom-video-player {
   position: relative;
   width: 100%;
   background: black;
 }
-.video-element {
+.video-container {
   width: 100%;
-  display: block;
-  outline: none;
-}
-/* 全屏样式 */
-.video-element.fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1000;
+  aspect-ratio: 16 / 9;
+  .video-element {
+    display: block;
+    outline: none;
+    width: 100%;
+    object-fit: contain;
+  }
 }
 </style>
